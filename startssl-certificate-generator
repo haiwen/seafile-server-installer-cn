@@ -1,0 +1,169 @@
+#!/bin/bash
+#
+# seafile-server-installer/startssl-certificate-generator
+#
+# Copyright 2015, Alexander Jackson <alexander.jackson@seafile.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#set -x
+# -------------------------------------------
+# Vars
+# -------------------------------------------
+CLASS_DEFAULT=1
+RSA=4096
+
+
+# -------------------------------------------
+# About
+# -------------------------------------------
+cat << EOF
+
+  StartSSL certificate creator for NGINX
+
+  Go to https://www.startssl.com and sign up. Decide
+  if the free class1 certs are good enough or if you
+  need paid class2 or class3 certificates. Class1
+  certificates are the default after signing up. You
+  don't need to do anything else to issue class1 certs.
+
+  For questions or suggestions please contact me at
+  alexander.jackson@seafile.de
+
+  -----------------------------------------------------------------
+  Hit return to proceed or CTRL-C to abort.
+
+EOF
+
+read dummy
+
+
+# -------------------------------------------
+# Start working
+# -------------------------------------------
+read -p "New certs class? [$CLASS_DEFAULT]" CLASS
+CLASS="${CLASS:-$CLASS_DEFAULT}"
+
+if [[ $CLASS > 3 ]]; then
+  echo Wrong class type. Select 1, 2 or 3. Aborting.. ; exit 1
+fi
+
+read -p "New certs domain name? " DOMAIN
+
+CERT_DIR=$(pwd)/certs/${DOMAIN}
+
+
+# -------------------------------------------
+# Abort if CERT_DIR exists
+# -------------------------------------------
+if [[ -d "${CERT_DIR}" ]] ;
+then
+  echo " Aborting because directory ${CERT_DIR} already exist" ; exit 1
+fi
+
+mkdir -p ${CERT_DIR}
+
+
+# -------------------------------------------
+# Create certificate signing request and private key in batch mode
+# -------------------------------------------
+openssl req -new -nodes -keyout ${CERT_DIR}/${DOMAIN}.key -out ${CERT_DIR}/${DOMAIN}.csr -newkey rsa:${RSA} -batch
+
+
+# -------------------------------------------
+# Print instructions
+# -------------------------------------------
+cat << EOF
+
+  Follow these steps next:
+
+  1. Go to https://www.startssl.com >
+  2. Certificates Wizard >
+  3. Certificate Target: (Web Server SSL/TLS Certificate) > Continue >
+  4. Generate Private Key > Skip >
+  5. Submit Certificate Request (CSR) (Paste your csr shown below)
+
+EOF
+
+cat ${CERT_DIR}/${DOMAIN}.csr
+
+
+
+# -------------------------------------------
+# Print more instructions
+# -------------------------------------------
+cat << EOF
+
+  6. Continue >>
+  7. Certificate Request Received > Continue >>
+  8. Add Domains: (select your domain)
+  9. Optionally Add Domains > Add More < (repeat until happy) > Continue >>
+ 10. Ready Processing Certificate > Continue >>
+
+EOF
+
+echo "Hit return when the certificate is displayed."
+read dummy
+
+echo "Replace content with certificate, save and exit." > ${CERT_DIR}/${DOMAIN}.crt
+
+nano ${CERT_DIR}/${DOMAIN}.crt
+
+echo "Creating class ${CLASS} chained certificate for NGINX"
+
+
+# -------------------------------------------
+# Create certificate change for usage with NGINX
+# -------------------------------------------
+cat ${CERT_DIR}/${DOMAIN}.crt > ${CERT_DIR}/${DOMAIN}_chained.crt
+
+if [[ $CLASS -eq 1 ]]; then
+  wget -O - https://www.startssl.com/certs/class1/sha2/pem/sub.class1.server.sha2.ca.pem >> ${CERT_DIR}/${DOMAIN}_chained.crt
+fi
+
+if [[ $CLASS -eq 2 ]]; then
+  wget -O - https://www.startssl.com/certs/class2/sha2/pem/sub.class2.server.sha2.ca.pem >> ${CERT_DIR}/${DOMAIN}_chained.crt
+fi
+
+if [[ $CLASS -eq 3 ]]; then
+  wget -O - https://www.startssl.com/certs/class3/sha2/pem/sub.class3.server.sha2.ca.pem >> ${CERT_DIR}/${DOMAIN}_chained.crt
+fi
+
+wget -O - https://www.startssl.com/certs/ca-sha2.pem >> ${CERT_DIR}/${DOMAIN}_chained.crt
+
+
+# -------------------------------------------
+# List new csr and key for informational value
+# -------------------------------------------
+echo "Our newly Created files:"
+ls -ahl ${CERT_DIR}
+
+
+# -------------------------------------------
+# Print
+# -------------------------------------------
+cat << EOF
+
+  Implementation example for NGINX:
+
+  [...]
+  ssl on;
+  ssl_certificate ${CERT_DIR}/${DOMAIN}_chained.crt;
+  ssl_certificate_key ${CERT_DIR}/${DOMAIN}.key;
+  [...]
+
+  Finished!
+
+EOF
