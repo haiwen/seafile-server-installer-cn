@@ -34,6 +34,51 @@ SEAFILE_SERVER_PORT=12001
 SEAFILE_VERSION=4.1.2
 SEAFILE_EDITION=pro-server
 SEAFILE_SOURCE=/usr/src/seafile/seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz
+MODE=$1
+
+
+# -------------------------------------------
+# Mode switcher
+# -------------------------------------------
+if [[ $MODE = dev ]]; then
+HTTP=http
+  cat << EOF
+
+  Running installer in development mode.
+
+  Don't proceed for production systems since web traffic is not encrypted.
+
+
+  -----------------------------------------------------------------
+
+  Hit return to proceed or CTRL-C to abort.
+
+EOF
+read dummy
+else
+HTTP=https
+cat << EOF
+
+  Running installer in production mode.
+
+  Self signed-certificate will get installed. Starting with Seafile
+  client version 4.2 you will need to import the certificate locally for
+  the client to work.
+
+  Alternatively you should replace the self signed-certificate certificate
+  with an official certificate like for instance a free Class1
+  StartSSL certificate from https://www.startssl.com.
+
+  You can find a StartSSL certificate creation helper script at
+  https://github.com/SeafileDE/seafile-server-installer/blob/master/startssl-certificate-generator
+
+  -----------------------------------------------------------------
+
+  Hit return to proceed or CTRL-C to abort.
+
+EOF
+read dummy
+fi
 
 
 # -------------------------------------------
@@ -143,6 +188,65 @@ apt-get install nginx -y
 
 rm /etc/nginx/conf.d/*
 
+if [[ $MODE = dev ]]; then
+
+cat > /etc/nginx/conf.d/seafile.conf <<'EOF'
+server {
+      listen 80;
+      server_name  "";
+
+      location / {
+          fastcgi_pass    127.0.0.1:8000;
+          fastcgi_param   SCRIPT_FILENAME     $document_root$fastcgi_script_name;
+          fastcgi_param   PATH_INFO           $fastcgi_script_name;
+          fastcgi_param   SERVER_PROTOCOL     $server_protocol;
+          fastcgi_param   QUERY_STRING        $query_string;
+          fastcgi_param   REQUEST_METHOD      $request_method;
+          fastcgi_param   CONTENT_TYPE        $content_type;
+          fastcgi_param   CONTENT_LENGTH      $content_length;
+          fastcgi_param   SERVER_ADDR         $server_addr;
+          fastcgi_param   SERVER_PORT         $server_port;
+          fastcgi_param   SERVER_NAME         $server_name;
+          fastcgi_param   HTTPS               off;
+          fastcgi_param   HTTP_SCHEME         http;
+
+          access_log      /var/log/nginx/seahub.access.log;
+          error_log       /var/log/nginx/seahub.error.log;
+      }
+      location /seafhttp {
+          rewrite ^/seafhttp(.*)$ $1 break;
+          proxy_pass http://127.0.0.1:8082;
+          client_max_body_size 0;
+          proxy_connect_timeout  36000s;
+          proxy_read_timeout  36000s;
+      }
+      location /media {
+          root /opt/seafile/seafile-server-latest/seahub;
+      }
+     location /seafdav {
+        fastcgi_pass    127.0.0.1:8080;
+        fastcgi_param   SCRIPT_FILENAME     $document_root$fastcgi_script_name;
+        fastcgi_param   PATH_INFO           $fastcgi_script_name;
+        fastcgi_param   SERVER_PROTOCOL     $server_protocol;
+        fastcgi_param   QUERY_STRING        $query_string;
+        fastcgi_param   REQUEST_METHOD      $request_method;
+        fastcgi_param   CONTENT_TYPE        $content_type;
+        fastcgi_param   CONTENT_LENGTH      $content_length;
+        fastcgi_param   SERVER_ADDR         $server_addr;
+        fastcgi_param   SERVER_PORT         $server_port;
+        fastcgi_param   SERVER_NAME         $server_name;
+        fastcgi_param   HTTPS               off;
+
+        client_max_body_size 0;
+
+        access_log      /var/log/nginx/seafdav.access.log;
+        error_log       /var/log/nginx/seafdav.error.log;
+    }
+  }
+EOF
+
+else
+
 cat > /etc/nginx/conf.d/seafile.conf <<'EOF'
 server {
       listen       80;
@@ -212,6 +316,7 @@ mkdir /etc/nginx/ssl
 
 openssl genrsa -out /etc/nginx/ssl/seafile.key 4096
 openssl req -new -x509 -key /etc/nginx/ssl/seafile.key -out /etc/nginx/ssl/seafile.crt -days 10950 -batch
+fi
 
 
 # -------------------------------------------
@@ -247,15 +352,16 @@ http {
         client_header_timeout 12;
         keepalive_timeout 15;
         send_timeout 10;
-        gzip on;
-        gzip_vary on;
-        gzip_proxied expired no-cache no-store private auth any;
-        gzip_comp_level 9;
-        gzip_min_length 10240;
-        gzip_buffers 16 8k;
-        gzip_http_version 1.1;
-        gzip_types text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/xml font/woff2;
-        gzip_disable "MSIE [1-6].";
+        # Fully disabled gzip compression to mitigate Django BREACH attack: https://www.djangoproject.com/weblog/2013/aug/06/breach-and-django/
+        gzip off;
+        #gzip_vary on;
+        #gzip_proxied expired no-cache no-store private auth any;
+        #gzip_comp_level 9;
+        #gzip_min_length 10240;
+        #gzip_buffers 16 8k;
+        #gzip_http_version 1.1;
+        #gzip_types text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/xml font/woff2;
+        #gzip_disable "MSIE [1-6].";
         include /etc/nginx/conf.d/*.conf;
         include /etc/nginx/sites-enabled/*;
         map $scheme $php_https { default off; https on; }
@@ -431,8 +537,8 @@ clear
 sed -i "s/^SITE_BASE.*/SITE_BASE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
 sed -i "s/^SITE_NAME.*/SITE_NAME = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
 sed -i "s/^SITE_TITLE.*/SITE_TITLE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^FILE_SERVER_ROOT.*/FILE_SERVER_ROOT = '\https:\/\/${URL}\/seafhttp\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SERVICE_URL.*/SERVICE_URL = https:\/\/${URL}/g" ${SEAFILE_DIR}/ccnet/ccnet.conf
+sed -i "s/^FILE_SERVER_ROOT.*/FILE_SERVER_ROOT = '\${HTTP}:\/\/${URL}\/seafhttp\'/g" ${SEAFILE_DIR}/seahub_settings.py
+sed -i "s/^SERVICE_URL.*/SERVICE_URL = ${HTTP}:\/\/${URL}/g" ${SEAFILE_DIR}/ccnet/ccnet.conf
 
 
 # -------------------------------------------
@@ -448,7 +554,7 @@ cat <<EOF
 
   Fertig! Der Seafile Server wurde neu gestartet.
 
-  Seahub sollte nun über https://${HOSTNAME} erreichbar sein.
+  Seahub sollte nun über ${HTTP}://${HOSTNAME} erreichbar sein.
 
 EOF
 ENDOFFILE
@@ -529,7 +635,8 @@ LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH "${CCNET_INIT}" -c "${DEFAULT_CCNET_CON
   --name "${SEAFILE_SERVER_NAME}" --port "${SERVER_PORT}" --host "${SEAFILE_DNS}"
 
 # Fix service url
-eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = https:\/\/${SEAFILE_DNS}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
+eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = ${HTTP}:\/\/${SEAFILE_DNS}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
+
 
 
 # -------------------------------------------
@@ -658,7 +765,7 @@ EMAIL_PORT                          = '25'
 DEFAULT_FROM_EMAIL                  = 'seafile@${SEAFILE_DNS}'
 SERVER_EMAIL                        = 'EMAIL_HOST_USER'
 TIME_ZONE                           = 'Europe/Berlin'
-SITE_BASE                           = 'https://${SEAFILE_DNS}'
+SITE_BASE                           = '${HTTP}://${SEAFILE_DNS}'
 SITE_NAME                           = 'Seafile Professional Server'
 SITE_TITLE                          = 'Seafile Professional Server'
 SITE_ROOT                           = '/'
@@ -672,7 +779,7 @@ FILE_PREVIEW_MAX_SIZE               = 30 * 1024 * 1024
 SESSION_COOKIE_AGE                  = 60 * 60 * 24 * 7 * 2
 SESSION_SAVE_EVERY_REQUEST          = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE     = False
-FILE_SERVER_ROOT                    = 'https://${SEAFILE_DNS}/seafhttp'
+FILE_SERVER_ROOT                    = '${HTTP}://${SEAFILE_DNS}/seafhttp'
 REPO_PASSWORD_MIN_LENGTH            = 8
 USER_PASSWORD_MIN_LENGTH            = 6
 USER_PASSWORD_STRENGTH_LEVEL        = 3
@@ -737,7 +844,7 @@ cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
   -----------------------------------------------------------------
 
   Server Name:         ${SEAFILE_SERVER_NAME}
-  Server Address:      https://${SEAFILE_DNS}
+  Server Address:      ${HTTP}://${SEAFILE_DNS}
 
   Seafile Admin:       ${SEAFILE_ADMIN}
   Admin Password:      ${SEAFILE_ADMIN_PW}
@@ -810,4 +917,27 @@ clear
 
 less ${SEAFILE_DIR}/seafile-pro-installer.log
 
+
+# -------------------------------------------
+# Mode reminder
+# -------------------------------------------
+if [[ $MODE = dev ]]; then
+HTTP=http
+  cat << EOF
+
+  Running installer in development mode.
+
+  Don't use this installation in production environments,
+  since web traffic is not encrypted.
+
+  I am finished, enjoy! \;-\)
+
+  -----------------------------------------------------------------
+
+  Hit return to proceed or CTRL-C to abort.
+
+EOF
+read dummy
+else
 echo I am finished, enjoy! \;-\)
+fi
