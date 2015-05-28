@@ -30,10 +30,16 @@ HOSTNAME=$(hostname -i)
 FILESERVER_PORT=8082
 SERVER_PORT=10001
 SEAFILE_SERVER_PORT=12001
-SEAFILE_VERSION=4.1.2
+SEAFILE_VERSION=$1
 SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
 SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
 TIME_ZONE=Asia/Shanghai
+
+if [ "$#" -ne 1 ]; then
+    echo "You must specif Seafile version to install"
+    echo "Like: $0 4.1.2"
+    exit 1
+fi
 
 # -------------------------------------------
 # Seafile Server Community Edition on Ubuntu Trusty (64bit)
