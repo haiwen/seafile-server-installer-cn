@@ -33,7 +33,7 @@ SEAFILE_SERVER_PORT=12001
 SEAFILE_VERSION=4.1.2
 SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
 SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
-TIME_ZONE=Asia/Beijing
+TIME_ZONE=Asia/Shanghai
 
 # -------------------------------------------
 # Seafile Server Community Edition on Ubuntu Trusty (64bit)
@@ -67,15 +67,6 @@ clear
 # -------------------------------------------
 if [[ $EUID -ne 0 ]]; then
   echo "  Aborting because you are not root" ; exit 1
-fi
-
-
-# -------------------------------------------
-# Abort if user seafile exists
-# -------------------------------------------
-if getent passwd ${SEAFILE_USER} > /dev/null 2>&1 ;
-then
-  echo "  Aborting because user ${SEAFILE_USER} already exist" ; exit 1
 fi
 
 
@@ -289,10 +280,11 @@ chown -R ${SEAFILE_USER}.nogroup /opt/seafile/
 mysql -e "CREATE DATABASE IF NOT EXISTS \`ccnet-db\` character set = 'utf8';"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`seafile-db\` character set = 'utf8';"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`seahub-db\` character set = 'utf8';"
+mysql -e "drop user 'seafile'@'localhost';"
 mysql -e "create user 'seafile'@'localhost' identified by '$SQLSEAFILEPW';"
-mysql -e "GRANT ALL PRIVILEGES ON \`ccnet-db\`.* to \`seafile\`;"
-mysql -e "GRANT ALL PRIVILEGES ON \`seafile-db\`.* to \`seafile\`;"
-mysql -e "GRANT ALL PRIVILEGES ON \`seahub-db\`.* to \`seafile\`;"
+mysql -e "GRANT ALL PRIVILEGES ON \`ccnet-db\`.* to \`seafile\`@localhost;"
+mysql -e "GRANT ALL PRIVILEGES ON \`seafile-db\`.* to \`seafile\`@localhost;"
+mysql -e "GRANT ALL PRIVILEGES ON \`seahub-db\`.* to \`seafile\`@localhost;"
 mysql seahub-db < /opt/seafile/seafile-server-${SEAFILE_VERSION}/seahub/sql/mysql.sql
 
 
