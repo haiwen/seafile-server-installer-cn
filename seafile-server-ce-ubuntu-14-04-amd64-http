@@ -102,13 +102,6 @@ libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy -y
 # -------------------------------------------
 # NGINX
 # -------------------------------------------
-cat > /etc/apt/sources.list.d/nginx.list <<EOF
-deb http://nginx.org/packages/mainline/ubuntu/ trusty nginx
-deb-src http://nginx.org/packages/mainline/ubuntu/ trusty nginx
-EOF
-wget -O - http://nginx.org/packages/keys/nginx_signing.key | apt-key add -
-
-aptitude update && aptitude upgrade -y
 aptitude install nginx -y
 
 rm /etc/nginx/conf.d/*
