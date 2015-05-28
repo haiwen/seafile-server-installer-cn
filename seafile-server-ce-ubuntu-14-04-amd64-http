@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# seafile-server-installer/seafile-pro_debian-jessie-amd64
+# seafile-server-installer/seafile-server-ce-ubuntu-14-04-amd64
 #
 # Copyright 2015, Alexander Jackson <alexander.jackson@seafile.de>
 #
@@ -22,73 +22,27 @@
 # -------------------------------------------
 # Vars
 # -------------------------------------------
-SEAFILE_ADMIN=admin@seafile.lan
+SEAFILE_ADMIN=admin@seafile.local
 SEAFILE_USER=seafile
-SEAFILE_SERVER_NAME=$(hostname -s | cut -c -16)
-SEAFILE_DNS=$(hostname -i)
+SERVER_NAME=$(hostname -s)
+IP_OR_DOMAIN=$(hostname -i)
 HOSTNAME=$(hostname -i)
 FILESERVER_PORT=8082
 SERVER_PORT=10001
 SEAFILE_SERVER_PORT=12001
-# Don't touch the following variable, unless you know what you are doing
 SEAFILE_VERSION=4.1.2
-SEAFILE_EDITION=pro-server
-SEAFILE_SOURCE=/usr/src/seafile/seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz
-MODE=$1
-
-
-# -------------------------------------------
-# Mode switcher
-# -------------------------------------------
-if [[ $MODE = dev ]]; then
-HTTP=http
-  cat << EOF
-
-  Running installer in development mode.
-
-  Don't proceed for production systems since web traffic is not encrypted.
-
-
-  -----------------------------------------------------------------
-
-  Hit return to proceed or CTRL-C to abort.
-
-EOF
-read dummy
-else
-HTTP=https
-cat << EOF
-
-  Running installer in production mode.
-
-  Self signed-certificate will get installed. Starting with Seafile
-  client version 4.2 you will need to import the certificate locally for
-  the client to work.
-
-  Alternatively you should replace the self signed-certificate certificate
-  with an official certificate like for instance a free Class1
-  StartSSL certificate from https://www.startssl.com.
-
-  You can find a StartSSL certificate creation helper script at
-  https://github.com/SeafileDE/seafile-server-installer/blob/master/startssl-certificate-generator
-
-  -----------------------------------------------------------------
-
-  Hit return to proceed or CTRL-C to abort.
-
-EOF
-read dummy
-fi
-
+SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
+SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
+TIME_ZONE=Asia/Beijing
 
 # -------------------------------------------
-# Seafile Server Professional Edition on Debian Jessie (64bit)
+# Seafile Server Community Edition on Ubuntu Trusty (64bit)
 # -------------------------------------------
 clear
 cat <<EOF
 
-  Install Seafile Professional Server on a Debian Jessie (64bit)
-  - Newest Seafile Professional server, MariaDB, Memcached, NGINX -
+  This script installs the community edition of the Seafile Server on a Ubuntu Trusty (64bit)
+  - Newest Seafile server version, MariaDB, Memcached, NGINX -
   -----------------------------------------------------------------
 
   This installer is meant to run on a freshly installed machine
@@ -97,7 +51,7 @@ cat <<EOF
   data!
 
   For questions or suggestions please contact me at
-  alexander.jackson@seafile.de
+  support@seafile.com
 
   -----------------------------------------------------------------
 
@@ -137,58 +91,36 @@ fi
 # -------------------------------------------
 # Update System
 # -------------------------------------------
-apt-get update
-apt-get dist-upgrade -y
+#aptitude update && aptitude dist-upgrade -y
 
+
+# -------------------------------------------
+# Ensure aptitude is installed
+# -------------------------------------------
+apt-get install aptitude -y
 
 # -------------------------------------------
 # Additional requirements
 # -------------------------------------------
-apt-get install sudo ntp htop pwgen curl openssl unattended-upgrades -y
-
-
-# -------------------------------------------
-# ensure correct time is set
-# -------------------------------------------
-ntpd -gq
-
-
-# -------------------------------------------
-# Security programs
-# -------------------------------------------
-apt-get install ufw fail2ban -y
-
-
-# -------------------------------------------
-# Activate firewall
-# -------------------------------------------
-for i in ssh http https ; do ufw allow $i; done
-yes | ufw enable
-
-
-# -------------------------------------------
-# Seafile requirements
-# -------------------------------------------
-apt-get install python-setuptools python-simplejson python-imaging python-mysqldb \
-openjdk-7-jre memcached python-memcache libreoffice python-uno poppler-utils -y
+aptitude install sudo python-pip python-setuptools python-imaging python-mysqldb \
+openjdk-7-jre memcached python-memcache pwgen curl openssl -y
+aptitude install sudo poppler-utils libpython2.7 libreoffice \
+libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy -y
 
 
 # -------------------------------------------
 # NGINX
 # -------------------------------------------
 cat > /etc/apt/sources.list.d/nginx.list <<EOF
-deb http://nginx.org/packages/mainline/debian/ jessie nginx
-deb-src http://nginx.org/packages/mainline/debian/ jessie nginx
+deb http://nginx.org/packages/mainline/ubuntu/ trusty nginx
+deb-src http://nginx.org/packages/mainline/ubuntu/ trusty nginx
 EOF
 wget -O - http://nginx.org/packages/keys/nginx_signing.key | apt-key add -
 
-apt-get update
-apt-get upgrade -y
-apt-get install nginx -y
+aptitude update && aptitude upgrade -y
+aptitude install nginx -y
 
 rm /etc/nginx/conf.d/*
-
-if [[ $MODE = dev ]]; then
 
 cat > /etc/nginx/conf.d/seafile.conf <<'EOF'
 server {
@@ -207,8 +139,6 @@ server {
           fastcgi_param   SERVER_ADDR         $server_addr;
           fastcgi_param   SERVER_PORT         $server_port;
           fastcgi_param   SERVER_NAME         $server_name;
-          fastcgi_param   HTTPS               off;
-          fastcgi_param   HTTP_SCHEME         http;
 
           access_log      /var/log/nginx/seahub.access.log;
           error_log       /var/log/nginx/seahub.error.log;
@@ -235,7 +165,6 @@ server {
         fastcgi_param   SERVER_ADDR         $server_addr;
         fastcgi_param   SERVER_PORT         $server_port;
         fastcgi_param   SERVER_NAME         $server_name;
-        fastcgi_param   HTTPS               off;
 
         client_max_body_size 0;
 
@@ -245,160 +174,13 @@ server {
   }
 EOF
 
-else
-
-cat > /etc/nginx/conf.d/seafile.conf <<'EOF'
-server {
-      listen       80;
-      server_name  "";
-      return 301 https://$http_host$request_uri?;
-}
-
-server {
-      listen 443 spdy;
-      server_name  "";
-
-      ssl on;
-      ssl_certificate /etc/nginx/ssl/seafile.crt;
-      ssl_certificate_key /etc/nginx/ssl/seafile.key;
-
-      location / {
-          fastcgi_pass    127.0.0.1:8000;
-          fastcgi_param   SCRIPT_FILENAME     $document_root$fastcgi_script_name;
-          fastcgi_param   PATH_INFO           $fastcgi_script_name;
-          fastcgi_param   SERVER_PROTOCOL     $server_protocol;
-          fastcgi_param   QUERY_STRING        $query_string;
-          fastcgi_param   REQUEST_METHOD      $request_method;
-          fastcgi_param   CONTENT_TYPE        $content_type;
-          fastcgi_param   CONTENT_LENGTH      $content_length;
-          fastcgi_param   SERVER_ADDR         $server_addr;
-          fastcgi_param   SERVER_PORT         $server_port;
-          fastcgi_param   SERVER_NAME         $server_name;
-          fastcgi_param   HTTPS               on;
-          fastcgi_param   HTTP_SCHEME         https;
-
-          access_log      /var/log/nginx/seahub.access.log;
-          error_log       /var/log/nginx/seahub.error.log;
-      }
-      location /seafhttp {
-          rewrite ^/seafhttp(.*)$ $1 break;
-          proxy_pass http://127.0.0.1:8082;
-          client_max_body_size 0;
-          proxy_connect_timeout  36000s;
-          proxy_read_timeout  36000s;
-      }
-      location /media {
-          root /opt/seafile/seafile-server-latest/seahub;
-      }
-     location /seafdav {
-        fastcgi_pass    127.0.0.1:8080;
-        fastcgi_param   SCRIPT_FILENAME     $document_root$fastcgi_script_name;
-        fastcgi_param   PATH_INFO           $fastcgi_script_name;
-        fastcgi_param   SERVER_PROTOCOL     $server_protocol;
-        fastcgi_param   QUERY_STRING        $query_string;
-        fastcgi_param   REQUEST_METHOD      $request_method;
-        fastcgi_param   CONTENT_TYPE        $content_type;
-        fastcgi_param   CONTENT_LENGTH      $content_length;
-        fastcgi_param   SERVER_ADDR         $server_addr;
-        fastcgi_param   SERVER_PORT         $server_port;
-        fastcgi_param   SERVER_NAME         $server_name;
-        fastcgi_param   HTTPS               on;
-
-        client_max_body_size 0;
-
-        access_log      /var/log/nginx/seafdav.access.log;
-        error_log       /var/log/nginx/seafdav.error.log;
-    }
-  }
-EOF
-
-mkdir /etc/nginx/ssl
-
-openssl genrsa -out /etc/nginx/ssl/seafile.key 4096
-openssl req -new -x509 -key /etc/nginx/ssl/seafile.key -out /etc/nginx/ssl/seafile.crt -days 10950 -batch
-fi
-
-
-# -------------------------------------------
-# Create optimized nginx.conf
-# -------------------------------------------
-cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-
-cat > /etc/nginx/nginx.conf <<'ENDOFFILE'
-user nginx nginx;
-worker_processes 4;
-events {
-        worker_connections 8096;
-        multi_accept on;
-        use epoll;
-}
-pid /var/run/nginx.pid;
-worker_rlimit_nofile 40000;
-http {
-        server_tokens off;
-        server_names_hash_bucket_size 128;
-        client_max_body_size 50M;
-        include /etc/nginx/mime.types;
-        default_type application/octet-stream;
-        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-        '$status $body_bytes_sent "$http_referer" '
-        '"$http_user_agent" "$http_x_forwarded_for"';
-        access_log /var/log/nginx/access.log main;
-        error_log /var/log/nginx/error.log warn;
-        sendfile on;
-        tcp_nopush on;
-        tcp_nodelay on;
-        client_body_timeout 12;
-        client_header_timeout 12;
-        keepalive_timeout 15;
-        send_timeout 10;
-        # Fully disabled gzip compression to mitigate Django BREACH attack: https://www.djangoproject.com/weblog/2013/aug/06/breach-and-django/
-        gzip off;
-        #gzip_vary on;
-        #gzip_proxied expired no-cache no-store private auth any;
-        #gzip_comp_level 9;
-        #gzip_min_length 10240;
-        #gzip_buffers 16 8k;
-        #gzip_http_version 1.1;
-        #gzip_types text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/xml font/woff2;
-        #gzip_disable "MSIE [1-6].";
-        include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/sites-enabled/*;
-        map $scheme $php_https { default off; https on; }
-        include perfect-forward-secrecy.conf;
-}
-ENDOFFILE
-
-
-# -------------------------------------------
-# Setup perfect forward secrecy
-# -------------------------------------------
-openssl dhparam -dsaparam -out /etc/nginx/dh4096.pem 4096
-
-cat > /etc/nginx/perfect-forward-secrecy.conf <<'EOF'
-ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-ssl_prefer_server_ciphers on;
-ssl_ciphers "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA";
-ssl_dhparam dh4096.pem;
-ssl_session_cache shared:SSL:10m;
-ssl_session_timeout 10m;
-EOF
-
-
-# -------------------------------------------
-# Fix NGINX worker_processes to number of CPU cores
-# -------------------------------------------
-CPUS=$(cat /proc/cpuinfo | grep processor | wc | awk '{ print $1 }')
-eval "sed -i 's/worker_processes.*/worker_processes  $CPUS;/g' /etc/nginx/nginx.conf"
-
-
-systemctl restart nginx
+service nginx restart
 
 
 # -------------------------------------------
 # MariaDB
 # -------------------------------------------
-DEBIAN_FRONTEND=noninteractive apt-get install mariadb-server -y
+DEBIAN_FRONTEND=noninteractive aptitude install mariadb-server -y
 
 SQLROOTPW=$(pwgen)
 
@@ -427,17 +209,17 @@ cat > /etc/init.d/seafile-server <<'EOF'
 # Description:       Start Seafile server
 ### END INIT INFO
 
-# Author: Alexander Jackson <alexander.jackson@seafile.de>
+# Author: Alexander Jackson <alexander.jackson@seafile.com.de>
 #
 
 # Change the value of "user" to your linux user name
-USER=seafile
+user=seafile
 
-# Change the value of "SEAFILE_DIR" to your path of seafile installation
-SEAFILE_DIR=/opt/seafile
-SCRIPT_PATH=${SEAFILE_DIR}/seafile-server-latest
-SEAFILE_INIT_LOG=${SEAFILE_DIR}/logs/seafile.init.log
-SEAHUB_INIT_LOG=${SEAFILE_DIR}/logs/seahub.init.log
+# Change the value of "seafile_dir" to your path of seafile installation
+seafile_dir=/opt/seafile
+script_path=${seafile_dir}/seafile-server-latest
+seafile_init_log=${seafile_dir}/logs/seafile.init.log
+seahub_init_log=${seafile_dir}/logs/seahub.init.log
 
 # Change the value of fastcgi to true if fastcgi is to be used
 fastcgi=true
@@ -446,26 +228,26 @@ fastcgi_port=8000
 
 case "$1" in
         start)
-                sudo -u ${USER} ${SCRIPT_PATH}/seafile.sh start >> ${SEAFILE_INIT_LOG}
+                sudo -u ${user} ${script_path}/seafile.sh start >> ${seafile_init_log}
                 if [  $fastcgi = true ];
                 then
-                        sudo -u ${USER} ${SCRIPT_PATH}/seahub.sh start-fastcgi ${fastcgi_port} >> ${SEAHUB_INIT_LOG}
+                        sudo -u ${user} ${script_path}/seahub.sh start-fastcgi ${fastcgi_port} >> ${seahub_init_log}
                 else
-                        sudo -u ${USER} ${SCRIPT_PATH}/seahub.sh start >> ${SEAHUB_INIT_LOG}
+                        sudo -u ${user} ${script_path}/seahub.sh start >> ${seahub_init_log}
                 fi
         ;;
         restart)
-                sudo -u ${USER} ${SCRIPT_PATH}/seafile.sh restart >> ${SEAFILE_INIT_LOG}
+                sudo -u ${user} ${script_path}/seafile.sh restart >> ${seafile_init_log}
                 if [  $fastcgi = true ];
                 then
-                        sudo -u ${USER} ${SCRIPT_PATH}/seahub.sh restart-fastcgi ${fastcgi_port} >> ${SEAHUB_INIT_LOG}
+                        sudo -u ${user} ${script_path}/seahub.sh restart-fastcgi ${fastcgi_port} >> ${seahub_init_log}
                 else
-                        sudo -u ${USER} ${SCRIPT_PATH}/seahub.sh restart >> ${SEAHUB_INIT_LOG}
+                        sudo -u ${user} ${script_path}/seahub.sh restart >> ${seahub_init_log}
                 fi
         ;;
         stop)
-                sudo -u ${USER} ${SCRIPT_PATH}/seafile.sh $1 >> ${SEAFILE_INIT_LOG}
-                sudo -u ${USER} ${SCRIPT_PATH}/seahub.sh $1 >> ${SEAHUB_INIT_LOG}
+                sudo -u ${user} ${script_path}/seafile.sh $1 >> ${seafile_init_log}
+                sudo -u ${user} ${script_path}/seahub.sh $1 >> ${seahub_init_log}
         ;;
         *)
                 echo "Usage: /etc/init.d/seafile-server {start|stop|restart}"
@@ -475,91 +257,7 @@ esac
 EOF
 
 chmod +x /etc/init.d/seafile-server
-systemctl enable seafile-server
-
-
-# -------------------------------------------
-# Install seafile-server-change-address script
-# -------------------------------------------
-cat > /usr/local/sbin/seafile-server-change-address <<'ENDOFFILE'
-#/bin/bash
-#set -x
-# -------------------------------------------
-# Vars
-# -------------------------------------------
-HOSTNAME=$(hostname -f)
-SEAFILE_DIR=/opt/seafile
-
-
-# -------------------------------------------
-# Intro
-# -------------------------------------------
-clear
-cat <<EOF
-
-  Mit diesem Skript können Sie die Adresse Ihres
-  Seafile Servers Ändern. Das ist zum Beispiel nötig wenn
-  sich Ihre Domain- oder IP-Adresse geändert hat.
-
-  Wird Seafile mit der falschen Adresse betrieben,
-  funktioniert der Up- und Download von Dateien nicht.
-
-  Soll der Server mittes Portweiterleitung erreichbar
-  sein, verwenden Sie bitte die öffentliche oder externe
-  IP Ihres Routers bzw. einen öffentlich Domainnamen.
-
-  Bei Falscheingaben rufen Sie das Skript bitte erneut auf.
-
-  Der aktuelle Hostname wird vorausgefüllt. Ggf. einfach
-  ändern.
-
-EOF
-
-echo "Geben Sie jetzt die neue IP oder Domainadresse"
-read -e -p "Neue Domainadresse:" -i " ${HOSTNAME}" URL
-
-
-cat <<EOF
-
-  Die eingebenen Adresse lautet: ${URL}
-
-  -------------------------------------------
-  Fortfahren mit ENTER. Abruch mit STRG-C...
-
-EOF
-read dummy
-clear
-
-
-# -------------------------------------------
-# Aendere Adressen in seahub_settings.py und ccnet.conf
-# -------------------------------------------
-sed -i "s/^SITE_BASE.*/SITE_BASE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SITE_NAME.*/SITE_NAME = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SITE_TITLE.*/SITE_TITLE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^FILE_SERVER_ROOT.*/FILE_SERVER_ROOT = '\${HTTP}:\/\/${URL}\/seafhttp\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SERVICE_URL.*/SERVICE_URL = ${HTTP}:\/\/${URL}/g" ${SEAFILE_DIR}/ccnet/ccnet.conf
-
-
-# -------------------------------------------
-# Starte Seafile neu
-# -------------------------------------------
-systemctl restart seafile-server
-
-
-# -------------------------------------------
-# Outro
-# -------------------------------------------
-cat <<EOF
-
-  Fertig! Der Seafile Server wurde neu gestartet.
-
-  Seahub sollte nun über ${HTTP}://${HOSTNAME} erreichbar sein.
-
-EOF
-ENDOFFILE
-
-chmod 500 /usr/local/sbin/seafile-server-change-address
+update-rc.d seafile-server defaults
 
 
 # -------------------------------------------
@@ -568,10 +266,10 @@ chmod 500 /usr/local/sbin/seafile-server-change-address
 adduser --system --gecos "${SEAFILE_USER}" ${SEAFILE_USER} --home /opt/seafile
 mkdir -p /opt/seafile/installed
 cd /opt/seafile/
-cp ${SEAFILE_SOURCE} ./seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz
-tar xzf ./seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz
+curl -OL ${SEAFILE_SERVER_PACKAGE_URL}
+tar xzf ${SEAFILE_SERVER_PACKAGE}
 
-mv ./seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz installed/./seafile-${SEAFILE_EDITION}_${SEAFILE_VERSION}_x86-64.tar.gz
+mv ${SEAFILE_SERVER_PACKAGE} installed
 
 
 # -------------------------------------------
@@ -595,20 +293,20 @@ mysql -e "create user 'seafile'@'localhost' identified by '$SQLSEAFILEPW';"
 mysql -e "GRANT ALL PRIVILEGES ON \`ccnet-db\`.* to \`seafile\`;"
 mysql -e "GRANT ALL PRIVILEGES ON \`seafile-db\`.* to \`seafile\`;"
 mysql -e "GRANT ALL PRIVILEGES ON \`seahub-db\`.* to \`seafile\`;"
-mysql seahub-db < /opt/seafile/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/seahub/sql/mysql.sql
+mysql seahub-db < /opt/seafile/seafile-server-${SEAFILE_VERSION}/seahub/sql/mysql.sql
 
 
 # -------------------------------------------
-# Go to /opt/seafile/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}
+# Go to /opt/seafile/seafile-server-${SEAFILE_VERSION}
 # -------------------------------------------
-cd /opt/seafile/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/
+cd /opt/seafile/seafile-server-${SEAFILE_VERSION}/
 
 
 # -------------------------------------------
 # Vars - Don't touch these unless you really know what you are doing!
 # -------------------------------------------
 SCRIPT=$(readlink -f "$0")
-INSTALLPATH=/opt/seafile/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/
+INSTALLPATH=/opt/seafile/seafile-server-${SEAFILE_VERSION}/
 TOPDIR=$(dirname "${INSTALLPATH}")
 SRC_DOCS_DIR=${INSTALLPATH}/seafile/docs/
 SEAHUB_SECRET_KEYGEN=${INSTALLPATH}/seahub/tools/secret_key_generator.py
@@ -632,11 +330,10 @@ SEAFILE_SERVER_SYMLINK=${TOPDIR}/seafile-server-latest
 # -------------------------------------------
 export SEAFILE_LD_LIBRARY_PATH=${INSTALLPATH}/seafile/lib/:${INSTALLPATH}/seafile/lib64:${LD_LIBRARY_PATH}
 LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH "${CCNET_INIT}" -c "${DEFAULT_CCNET_CONF_DIR}" \
-  --name "${SEAFILE_SERVER_NAME}" --port "${SERVER_PORT}" --host "${SEAFILE_DNS}"
+  --name "${SERVER_NAME}" --port "${SERVER_PORT}" --host "${IP_OR_DOMAIN}"
 
 # Fix service url
-eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = ${HTTP}:\/\/${SEAFILE_DNS}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
-
+eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = http:\/\/${IP_OR_DOMAIN}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
 
 
 # -------------------------------------------
@@ -707,13 +404,6 @@ cp -f ${SRC_DOCS_DIR}/*.doc ${LIBRARY_TEMPLATE_DIR}
 
 
 # -------------------------------------------
-# Setup professional features
-# -------------------------------------------
-PRO_PY=${INSTALLPATH}/pro/pro.py
-$PYTHON ${PRO_PY} setup
-
-
-# -------------------------------------------
 # Configuring ccnet.conf
 # -------------------------------------------
 SEAFILESQLPW=$(grep password /opt/seafile/.my.cnf | awk -F'=' {'print $2'})
@@ -725,7 +415,7 @@ ENGINE = mysql
 HOST = 127.0.0.1
 PORT = 3306
 USER = seafile
-PASSWD = ${SEAFILESQLPW}
+PASSWD = $SEAFILESQLPW
 DB = ccnet-db
 CONNECTION_CHARSET = utf8
 EOF
@@ -741,7 +431,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'seahub-db',
         'USER': 'seafile',
-        'PASSWORD': '${SEAFILESQLPW}',
+        'PASSWORD': '$SEAFILESQLPW',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -762,12 +452,13 @@ EMAIL_HOST                          = 'localhost'
 EMAIL_HOST_USER                     = ''
 EMAIL_HOST_PASSWORD                 = ''
 EMAIL_PORT                          = '25'
-DEFAULT_FROM_EMAIL                  = 'seafile@${SEAFILE_DNS}'
+DEFAULT_FROM_EMAIL                  = 'seafile@${IP_OR_DOMAIN}'
 SERVER_EMAIL                        = 'EMAIL_HOST_USER'
-TIME_ZONE                           = 'Europe/Berlin'
-SITE_BASE                           = '${HTTP}://${SEAFILE_DNS}'
-SITE_NAME                           = 'Seafile Professional Server'
-SITE_TITLE                          = 'Seafile Professional Server'
+
+TIME_ZONE                           = '${TIME_ZONE}'
+SITE_BASE                           = 'http://${IP_OR_DOMAIN}'
+SITE_NAME                           = 'Seafile Server'
+SITE_TITLE                          = 'Seafile Server'
 SITE_ROOT                           = '/'
 USE_PDFJS                           = True
 ENABLE_SIGNUP                       = False
@@ -779,17 +470,8 @@ FILE_PREVIEW_MAX_SIZE               = 30 * 1024 * 1024
 SESSION_COOKIE_AGE                  = 60 * 60 * 24 * 7 * 2
 SESSION_SAVE_EVERY_REQUEST          = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE     = False
-FILE_SERVER_ROOT                    = '${HTTP}://${SEAFILE_DNS}/seafhttp'
-REPO_PASSWORD_MIN_LENGTH            = 8
-USER_PASSWORD_MIN_LENGTH            = 6
-USER_PASSWORD_STRENGTH_LEVEL        = 3
-USER_STRONG_PASSWORD_REQUIRED       = True
-ENABLE_MAKE_GROUP_PUBLIC            = False
-ENABLE_THUMBNAIL                    = True
-THUMBNAIL_ROOT                      = '${TOPDIR}/seahub-data/thumbnail/thumb/'
-THUMBNAIL_EXTENSION                 = 'png'
-THUMBNAIL_DEFAULT_SIZE              = '24'
-PREVIEW_DEFAULT_SIZE                = '100'
+
+FILE_SERVER_ROOT                    = 'http://${IP_OR_DOMAIN}/seafhttp'
 EOF
 
 
@@ -810,10 +492,10 @@ eval "sed -i 's/= ask_admin_password()/= \"${SEAFILE_ADMIN_PW}\"/' ${INSTALLPATH
 # -------------------------------------------
 # Start and stop Seafile eco system. This generates the initial admin user.
 # -------------------------------------------
-${TOPDIR}/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/seafile.sh start
-${TOPDIR}/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/seahub.sh start
-${TOPDIR}/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/seahub.sh stop
-${TOPDIR}/seafile-${SEAFILE_EDITION}-${SEAFILE_VERSION}/seafile.sh stop
+${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seafile.sh start
+${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seahub.sh start
+${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seahub.sh stop
+${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seafile.sh stop
 
 
 # -------------------------------------------
@@ -832,19 +514,19 @@ chown ${SEAFILE_USER}.nogroup -R /opt/seafile/
 # Start seafile server
 # -------------------------------------------
 echo "Starting productive Seafile server"
-systemctl restart seafile-server
+service seafile-server start
 
 
 # -------------------------------------------
 # Final report
 # -------------------------------------------
-cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
+cat > ${seafile_dir}/aio_seafile-server.log<<EOF
 
   Your Seafile server is installed
   -----------------------------------------------------------------
 
-  Server Name:         ${SEAFILE_SERVER_NAME}
-  Server Address:      ${HTTP}://${SEAFILE_DNS}
+  Server Name:         ${SERVER_NAME}
+  Server Address:      http://${IP_OR_DOMAIN}
 
   Seafile Admin:       ${SEAFILE_ADMIN}
   Admin Password:      ${SEAFILE_ADMIN_PW}
@@ -854,7 +536,7 @@ cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
   Seafile DB Credentials:  Check /opt/seafile/.my.cnf
   Root DB Credentials:     Check /root/.my.cnf
 
-  This report is also saved to ${SEAFILE_DIR}/seafile-pro-installer.log
+  This report is also saved to ${seafile_dir}/aio_seafile-server.log
 
 
 
@@ -864,9 +546,7 @@ cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
   1) Run seafile-server-change-address to add your Seafile servers DNS name
 
   2) If this server is behind a firewall, you need to ensure that
-     tcp port 443 for the NGINX reverse proxy is open. Optionally
-     you may also open tcp port 80 which redirects all unencrypted
-     http traffic to the encrypted https port.
+     tcp port 80 is open.
 
   3) Seahub tries to send emails via the local server. Install and
      configure Postfix for this to work.
@@ -882,10 +562,12 @@ cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
 
   2) Setup NGINX with official SSL certificate.
 
-  3) Harden system with port knocking, fail2ban, etc.
+  3) Secure server with iptables based firewall. For instance: UFW or shorewall
+
+  4) Harden system with port knocking, fail2ban, etc.
 
   5) Enable unattended installation of security updates. Check
-     https://wiki.debian.org/UnattendedUpgrades for details.
+     https://wiki.Ubuntu.org/UnattendedUpgrades for details.
 
   6) Implement a backup routine for your Seafile server.
 
@@ -905,39 +587,21 @@ cat > ${SEAFILE_DIR}/seafile-pro-installer.log<<EOF
 
   Contribute
   -----------------------------------------------------------------
-  Please contact alexander.jackson@seafile.de
+  Please contact alexander.jackson@seafile.com.de
   for bugs or suggestions about this installer. Thank you!
 
 EOF
 
-chmod 600 ${SEAFILE_DIR}/seafile-pro-installer.log
-chown -R ${SEAFILE_USER}.nogroup ${SEAFILE_DIR}/seafile-pro-installer.log
+chmod 600 ${seafile_dir}/aio_seafile-server.log
+chown -R ${SEAFILE_USER}.nogroup ${seafile_dir}/aio_seafile-server.log
+
+
+# -------------------------------------------
+# Install seafile-server-change-address script
+# -------------------------------------------
+wget https://gist.githubusercontent.com/alexanderjackson/7e6fd01187327ffd8518/raw/2a87ea94ec8906f8e1847236711eef27ba1d2bb8/seafile-server-change-address -O /usr/local/sbin/seafile-server-change-address
+chmod 500 /usr/local/sbin/seafile-server-change-address
 
 clear
 
-less ${SEAFILE_DIR}/seafile-pro-installer.log
-
-
-# -------------------------------------------
-# Mode reminder
-# -------------------------------------------
-if [[ $MODE = dev ]]; then
-HTTP=http
-  cat << EOF
-
-  Running installer in development mode.
-
-  Don't use this installation in production environments,
-  since web traffic is not encrypted.
-
-  I am finished, enjoy! \;-\)
-
-  -----------------------------------------------------------------
-
-  Hit return to proceed or CTRL-C to abort.
-
-EOF
-read dummy
-else
-echo I am finished, enjoy! \;-\)
-fi
+cat ${seafile_dir}/aio_seafile-server.log
