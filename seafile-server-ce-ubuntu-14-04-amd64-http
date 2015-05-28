@@ -95,6 +95,7 @@ fi
 # Ensure aptitude is installed
 # -------------------------------------------
 apt-get install aptitude -y
+aptitude update
 
 # -------------------------------------------
 # Additional requirements
