@@ -113,7 +113,7 @@ aptitude install nginx -y
 
 rm /etc/nginx/conf.d/*
 
-cat > /etc/nginx/conf.d/seafile.conf <<'EOF'
+cat > /etc/nginx/site-available/seafile.conf <<'EOF'
 server {
       listen 80;
       server_name  "";
@@ -162,8 +162,10 @@ server {
         access_log      /var/log/nginx/seafdav.access.log;
         error_log       /var/log/nginx/seafdav.error.log;
     }
-  }
+}
 EOF
+
+ln -s /etc/nginx/sites-available/seafile.conf /etc/nginx/sites-enabled/seafile.conf
 
 service nginx restart
 
@@ -171,19 +173,25 @@ service nginx restart
 # -------------------------------------------
 # MariaDB
 # -------------------------------------------
-DEBIAN_FRONTEND=noninteractive aptitude install mariadb-server -y
+if [[ -f "/root/.my.cnf" ]] ;
+then
+  echo "MariaDB installed before, skip this part"
+else
+  DEBIAN_FRONTEND=noninteractive aptitude install mariadb-server -y
 
-SQLROOTPW=$(pwgen)
+  SQLROOTPW=$(pwgen)
 
-mysqladmin -u root password $SQLROOTPW
+  mysqladmin -u root password $SQLROOTPW
 
-cat > /root/.my.cnf <<EOF
+  cat > /root/.my.cnf <<EOF
 [client]
 user=root
 password=$SQLROOTPW
 EOF
 
-chmod 600 /root/.my.cnf
+  chmod 600 /root/.my.cnf
+fi
+
 
 # -------------------------------------------
 # Seafile init script
