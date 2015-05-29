@@ -111,9 +111,9 @@ libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy -y
 # -------------------------------------------
 aptitude install nginx -y
 
-rm /etc/nginx/conf.d/*
+rm etc/nginx/sites-enabled/*
 
-cat > /etc/nginx/site-available/seafile.conf <<'EOF'
+cat > /etc/nginx/sites-available/seafile.conf <<'EOF'
 server {
       listen 80;
       server_name  "";
