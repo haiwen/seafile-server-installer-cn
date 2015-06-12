@@ -420,6 +420,20 @@ DB = ccnet-db
 CONNECTION_CHARSET = utf8
 EOF
 
+# -------------------------------------------
+# Configuring seafile.conf
+# -------------------------------------------
+cat >> ${DEFAULT_SEAFILE_DATA_DIR}/seafile.conf <<EOF
+
+[database]
+type = mysql
+host = 127.0.0.1
+port = 3306
+user = seafile
+password = $SEAFILESQLPW
+db_name = seafile-db
+connection_charset = utf8
+EOF
 
 # -------------------------------------------
 # Configuring seahub_settings.py
