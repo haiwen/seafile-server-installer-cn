@@ -1,0 +1,55 @@
+#/bin/bash
+#set -x
+# -------------------------------------------
+# Save at /usr/local/sbin/seafile-server-change-address and set permissions with
+# chmod 600 /usr/local/sbin/seafile-server-change-address
+# -------------------------------------------
+
+
+# -------------------------------------------
+# Vars
+# -------------------------------------------
+HOSTNAME=$(hostname -f)
+SEAFILE_DIR=/opt/seafile
+
+
+# -------------------------------------------
+# Intro
+# -------------------------------------------
+clear
+
+echo "Enter the new IP address or domain"
+read -e -p "New domain address:" -i " ${HOSTNAME}" URL
+
+cat <<EOF
+
+  New domain address is: ${URL}
+
+  -------------------------------------------
+  Continue with ENTER. Stop with CTRL-C...
+
+EOF
+read dummy
+clear
+
+
+# -------------------------------------------
+# Change address in seahub_settings.py und ccnet.conf
+# -------------------------------------------
+sed -i "s/^FILE_SERVER_ROOT.*/FILE_SERVER_ROOT = '\http:\/\/${URL}\/seafhttp\'/g" ${SEAFILE_DIR}/seahub_settings.py
+sed -i "s/^SERVICE_URL.*/SERVICE_URL = http:\/\/${URL}/g" ${SEAFILE_DIR}/ccnet/ccnet.conf
+
+
+# -------------------------------------------
+# restart seafile-server
+# -------------------------------------------
+service seafile-server restart
+
+
+cat <<EOF
+
+  Finished! The seafile server restarted.
+
+  Now can visit seahub by http://${URL}.
+
+EOF
