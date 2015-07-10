@@ -36,9 +36,6 @@ clear
 # -------------------------------------------
 # Change address in seahub_settings.py und ccnet.conf
 # -------------------------------------------
-sed -i "s/^SITE_BASE.*/SITE_BASE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SITE_NAME.*/SITE_NAME = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
-sed -i "s/^SITE_TITLE.*/SITE_TITLE = \'${URL}\'/g" ${SEAFILE_DIR}/seahub_settings.py
 sed -i "s/^FILE_SERVER_ROOT.*/FILE_SERVER_ROOT = '\http:\/\/${URL}\/seafhttp\'/g" ${SEAFILE_DIR}/seahub_settings.py
 sed -i "s/^SERVICE_URL.*/SERVICE_URL = http:\/\/${URL}/g" ${SEAFILE_DIR}/ccnet/ccnet.conf
 
