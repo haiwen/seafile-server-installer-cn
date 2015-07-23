@@ -17,6 +17,8 @@ wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master
 
 ```
 bash seafile-server-ce-ubuntu-14-04-amd64-http 4.1.2
+
+注：安装脚本在执行过程中会检查**/opt**目录下是否有指定版本号的安装包，如果存在则会安装此包，否则会从 Seafile 网站下载。所以，为了避免因下载失败而导致安装中断，您可以提前下载好安装包放到**/opt/**目录下。
 ```
 
 该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。该脚本会自动判断服务器的 IP 地址，并设置配置文件中相应选项。如果检测到的 IP 地址不对，会影响网页端文件的上传和下载。如果出现这个问题，您需要修改两个配置条目：
