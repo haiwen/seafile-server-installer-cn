@@ -13,10 +13,10 @@
 wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ce-ubuntu-14-04-amd64-http
 ```
 
-运行安装脚本并指定要安装的版本 (4.1.2)
+运行安装脚本并指定要安装的版本 (4.3.1)
 
 ```
-bash seafile-server-ce-ubuntu-14-04-amd64-http 4.1.2
+bash seafile-server-ce-ubuntu-14-04-amd64-http 4.3.1
 
 ```
 
