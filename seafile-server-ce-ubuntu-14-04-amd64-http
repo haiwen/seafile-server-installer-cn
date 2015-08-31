@@ -28,8 +28,6 @@ SERVER_NAME=$(hostname -s)
 IP_OR_DOMAIN=$(hostname -i)
 HOSTNAME=$(hostname -i)
 FILESERVER_PORT=8082
-SERVER_PORT=10001
-SEAFILE_SERVER_PORT=12001
 SEAFILE_VERSION=$1
 SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
 SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
@@ -335,7 +333,7 @@ SEAFILE_SERVER_SYMLINK=${TOPDIR}/seafile-server-latest
 # -------------------------------------------
 export SEAFILE_LD_LIBRARY_PATH=${INSTALLPATH}/seafile/lib/:${INSTALLPATH}/seafile/lib64:${LD_LIBRARY_PATH}
 LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH "${CCNET_INIT}" -c "${DEFAULT_CCNET_CONF_DIR}" \
-  --name "${SERVER_NAME}" --port "${SERVER_PORT}" --host "${IP_OR_DOMAIN}"
+  --name "${SERVER_NAME}" --host "${IP_OR_DOMAIN}"
 
 # Fix service url
 eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = http:\/\/${IP_OR_DOMAIN}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
@@ -345,7 +343,7 @@ eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = http:\/\/${IP_OR_DOMAIN}/' ${DEFAUL
 # Create seafile conf
 # -------------------------------------------
 LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH ${SEAF_SERVER_INIT} --seafile-dir "${SEAFILE_DATA_DIR}" \
-  --port ${SEAFILE_SERVER_PORT} --fileserver-port ${FILESERVER_PORT}
+  --fileserver-port ${FILESERVER_PORT}
 
 
 # -------------------------------------------
