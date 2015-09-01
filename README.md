@@ -60,4 +60,8 @@ bash seafile-server-ce-ubuntu-14-04-amd64-http 4.3.1
 ```
 rm -rf /opt/seafile
 ```
+### 备份 mysql
 
+* 拷贝 `db-backup` 目录到 `/opt/seafile`
+* 修改 `db-backup/db_backup.sh` 中的 `USER` `PASSWD`
+* 执行 `crontab -e` 并添加内容 `0 1 * * * * /opt/seafile/db-backup/db_backup.sh` (每天凌晨1：00进行备份)

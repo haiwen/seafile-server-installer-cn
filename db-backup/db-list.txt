@@ -1,0 +1,3 @@
+ccnet-db
+seafile-db
+seahub-db
