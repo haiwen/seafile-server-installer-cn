@@ -1,0 +1,11 @@
+seahub-db.avatar_uploaded
+seahub-db.avatar_avatar
+seahub-db.avatar_groupavatar
+seahub-db.Event
+seahub-db.FileAudit
+seahub-db.FileUpdate
+seahub-db.PermAudit
+seahub-db.UserEvent
+seahub-db.UserTrafficStat
+seahub-db.VirusFile
+seahub-db.VirusScanRecord
