@@ -19,6 +19,73 @@
 #
 #
 #set -x
+set -e
+
+if [[ "$#" -ne 1 ]]; then
+    echo "You must specif Seafile version to install"
+    echo "Like: $0 4.4.2"
+    exit 1
+fi
+
+clear
+cat <<EOF
+
+  This script installs the community edition of the Seafile Server on a Ubuntu 14.04 (Trusty) 64bit
+  - Newest Seafile server version, MariaDB, Memcached, NGINX -
+  -----------------------------------------------------------------
+
+  This installer is meant to run on a freshly installed machine
+  only. If you run it on a production server things can and
+  probably will go terrible wrong and you will loose valuable
+  data!
+
+  For questions or suggestions please contact us at
+  support@seafile.com
+
+  -----------------------------------------------------------------
+
+  Possible options:
+  1 = Seafile Community (Free) Edition (CE)
+  2 = Seafile Professional Edition (PRO)
+
+EOF
+
+PS3="Which Seafile version would you like to install? "
+select SEAFILE_SERVER_VERSION in CE PRO ABORT; do
+    case "${SEAFILE_SERVER_VERSION}" in
+        ABORT)
+            echo "Aborting"
+            break
+            ;;
+        "")
+            echo "$REPLY: Wrong value. Select 1 or 2."
+            ;;
+        *)
+            if [[ ${SEAFILE_SERVER_VERSION} = "PRO" ]]; then
+                SEAFILE_PRO=1
+            else
+                SEAFILE_PRO=0
+            fi
+            break
+    esac
+done
+
+is_pro() {
+    if [[ "$SEAFILE_PRO" == "1" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+echo
+if is_pro; then
+    echo "This script will install Seafile Professional Edition for you."
+else
+    echo "This script will install Seafile Community Edition for you."
+fi
+echo
+
 # -------------------------------------------
 # Vars
 # -------------------------------------------
@@ -29,41 +96,22 @@ IP_OR_DOMAIN=$(hostname -i)
 HOSTNAME=$(hostname -i)
 FILESERVER_PORT=8082
 SEAFILE_VERSION=$1
-SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
-SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
 TIME_ZONE=Asia/Shanghai
 
-if [ "$#" -ne 1 ]; then
-    echo "You must specif Seafile version to install"
-    echo "Like: $0 4.1.2"
-    exit 1
+if is_pro; then
+    SEAFILE_SERVER_PACKAGE=seafile-pro-server_${SEAFILE_VERSION}_x86-64.tar.gz
+    if [[ ! -e /opt/$SEAFILE_SERVER_PACKAGE ]]; then
+        echo
+        echo "You must download \"$SEAFILE_SERVER_PACKAGE\" to the /opt/ folder before running this script!"
+        echo
+        exit 1
+    fi
+    INSTALLPATH=/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}/
+else
+    SEAFILE_SERVER_PACKAGE=seafile-server_${SEAFILE_VERSION}_x86-64.tar.gz
+    SEAFILE_SERVER_PACKAGE_URL=http://download-cn.seafile.com/${SEAFILE_SERVER_PACKAGE}
+    INSTALLPATH=/opt/seafile/seafile-server-${SEAFILE_VERSION}/
 fi
-
-# -------------------------------------------
-# Seafile Server Community Edition on Ubuntu Trusty (64bit)
-# -------------------------------------------
-clear
-cat <<EOF
-
-  This script installs the community edition of the Seafile Server on a Ubuntu Trusty (64bit)
-  - Newest Seafile server version, MariaDB, Memcached, NGINX -
-  -----------------------------------------------------------------
-
-  This installer is meant to run on a freshly installed machine
-  only. If you run it on a production server things can and
-  probably will go terrible wrong and you will loose valuable
-  data!
-
-  For questions or suggestions please contact me at
-  support@seafile.com
-
-  -----------------------------------------------------------------
-
-  Hit return to proceed or CTRL-C to abort.
-
-EOF
-read dummy
-clear
 
 
 # -------------------------------------------
@@ -82,32 +130,13 @@ then
   echo "  Aborting because directory /opt/seafile/ already exist" ; exit 1
 fi
 
-
-# -------------------------------------------
-# Update System
-# -------------------------------------------
-#aptitude update && aptitude dist-upgrade -y
-
-
-# -------------------------------------------
-# Ensure aptitude is installed
-# -------------------------------------------
-apt-get install aptitude -y
-aptitude update
-
 # -------------------------------------------
 # Additional requirements
 # -------------------------------------------
-aptitude install sudo python-pip python-setuptools python-imaging python-mysqldb \
-openjdk-7-jre memcached python-memcache pwgen curl openssl -y
-aptitude install sudo poppler-utils libpython2.7 libreoffice \
-libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy -y
-
-
-# -------------------------------------------
-# NGINX
-# -------------------------------------------
-aptitude install nginx -y
+apt-get update
+apt-get install -y sudo python-pip python-setuptools python-imaging python-mysqldb \
+openjdk-7-jre memcached python-memcache pwgen curl openssl poppler-utils libpython2.7 libreoffice \
+libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx
 
 rm /etc/nginx/sites-enabled/*
 
@@ -163,7 +192,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/seafile.conf /etc/nginx/sites-enabled/seafile.conf
+ln -sf /etc/nginx/sites-available/seafile.conf /etc/nginx/sites-enabled/seafile.conf
 
 service nginx restart
 
@@ -175,7 +204,7 @@ if [[ -f "/root/.my.cnf" ]] ;
 then
   echo "MariaDB installed before, skip this part"
 else
-  DEBIAN_FRONTEND=noninteractive aptitude install mariadb-server -y
+  DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
 
   SQLROOTPW=$(pwgen)
 
@@ -263,8 +292,7 @@ update-rc.d seafile-server defaults
 adduser --system --gecos "${SEAFILE_USER}" ${SEAFILE_USER} --home /opt/seafile
 mkdir -p /opt/seafile/installed
 cd /opt/seafile/
-if [ ! -e /opt/${SEAFILE_SERVER_PACKAGE} ];
-then
+if ! is_pro && [[ ! -e /opt/${SEAFILE_SERVER_PACKAGE} ]]; then
     curl -OL ${SEAFILE_SERVER_PACKAGE_URL}
 else
     cp /opt/${SEAFILE_SERVER_PACKAGE} .
@@ -291,31 +319,26 @@ chown -R ${SEAFILE_USER}.nogroup /opt/seafile/
 mysql -e "CREATE DATABASE IF NOT EXISTS \`ccnet-db\` character set = 'utf8';"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`seafile-db\` character set = 'utf8';"
 mysql -e "CREATE DATABASE IF NOT EXISTS \`seahub-db\` character set = 'utf8';"
-mysql -e "drop user 'seafile'@'localhost';"
 mysql -e "create user 'seafile'@'localhost' identified by '$SQLSEAFILEPW';"
 mysql -e "GRANT ALL PRIVILEGES ON \`ccnet-db\`.* to \`seafile\`@localhost;"
 mysql -e "GRANT ALL PRIVILEGES ON \`seafile-db\`.* to \`seafile\`@localhost;"
 mysql -e "GRANT ALL PRIVILEGES ON \`seahub-db\`.* to \`seafile\`@localhost;"
-mysql seahub-db < /opt/seafile/seafile-server-${SEAFILE_VERSION}/seahub/sql/mysql.sql
+mysql seahub-db < ${INSTALLPATH}/seahub/sql/mysql.sql
 
 
 # -------------------------------------------
-# Go to /opt/seafile/seafile-server-${SEAFILE_VERSION}
+# Go to /opt/seafile/seafile-pro-server-${SEAFILE_VERSION}
 # -------------------------------------------
-cd /opt/seafile/seafile-server-${SEAFILE_VERSION}/
-
+cd $INSTALLPATH
 
 # -------------------------------------------
 # Vars - Don't touch these unless you really know what you are doing!
 # -------------------------------------------
-SCRIPT=$(readlink -f "$0")
-INSTALLPATH=/opt/seafile/seafile-server-${SEAFILE_VERSION}/
 TOPDIR=$(dirname "${INSTALLPATH}")
 SRC_DOCS_DIR=${INSTALLPATH}/seafile/docs/
 SEAHUB_SECRET_KEYGEN=${INSTALLPATH}/seahub/tools/secret_key_generator.py
 DEFAULT_CCNET_CONF_DIR=${TOPDIR}/ccnet
 DEFAULT_SEAFILE_DATA_DIR=${TOPDIR}/seafile-data
-DEFAULT_SEAHUB_DB=${TOPDIR}/seahub.db
 DEFAULT_CONF_DIR=${TOPDIR}/conf
 SEAFILE_DATA_DIR=${TOPDIR}/seafile-data
 LIBRARY_TEMPLATE_DIR=${SEAFILE_DATA_DIR}/library-template
@@ -389,7 +412,7 @@ mkdir -p "${TOPDIR}/logs"
 # -------------------------------------------
 # Create symlink for current server version
 # -------------------------------------------
-ln -s $(basename ${INSTALLPATH}) ${SEAFILE_SERVER_SYMLINK}
+ln -s "$(basename ${INSTALLPATH})" "${SEAFILE_SERVER_SYMLINK}"
 
 
 # Fix permissions
@@ -409,8 +432,6 @@ cp -f ${SRC_DOCS_DIR}/*.doc ${LIBRARY_TEMPLATE_DIR}
 # -------------------------------------------
 # Configuring ccnet.conf
 # -------------------------------------------
-SEAFILESQLPW=$(grep password /opt/seafile/.my.cnf | awk -F'=' {'print $2'})
-
 cat >> ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf <<EOF
 
 [Database]
@@ -418,7 +439,7 @@ ENGINE = mysql
 HOST = 127.0.0.1
 PORT = 3306
 USER = seafile
-PASSWD = $SEAFILESQLPW
+PASSWD = $SQLSEAFILEPW
 DB = ccnet-db
 CONNECTION_CHARSET = utf8
 EOF
@@ -433,7 +454,7 @@ type = mysql
 host = 127.0.0.1
 port = 3306
 user = seafile
-password = $SEAFILESQLPW
+password = $SQLSEAFILEPW
 db_name = seafile-db
 connection_charset = utf8
 EOF
@@ -448,7 +469,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'seahub-db',
         'USER': 'seafile',
-        'PASSWORD': '$SEAFILESQLPW',
+        'PASSWORD': '$SQLSEAFILEPW',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -505,14 +526,13 @@ SEAFILE_ADMIN_PW=$(pwgen)
 eval "sed -i 's/= ask_admin_email()/= \"${SEAFILE_ADMIN}\"/' ${INSTALLPATH}/check_init_admin.py"
 eval "sed -i 's/= ask_admin_password()/= \"${SEAFILE_ADMIN_PW}\"/' ${INSTALLPATH}/check_init_admin.py"
 
-
 # -------------------------------------------
 # Start and stop Seafile eco system. This generates the initial admin user.
 # -------------------------------------------
-${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seafile.sh start
-${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seahub.sh start
-${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seahub.sh stop
-${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seafile.sh stop
+${INSTALLPATH}/seafile.sh start
+${INSTALLPATH}/seahub.sh start
+${INSTALLPATH}/seahub.sh stop
+${INSTALLPATH}/seafile.sh stop
 
 
 # -------------------------------------------
@@ -520,6 +540,11 @@ ${TOPDIR}/seafile-server-${SEAFILE_VERSION}/seafile.sh stop
 # -------------------------------------------
 mv ${INSTALLPATH}/check_init_admin.py.backup ${INSTALLPATH}/check_init_admin.py
 
+if is_pro; then
+    PRO_PY=${INSTALLPATH}/pro/pro.py
+    $PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub-db
+    sed -i 's/enabled = false/enabled = true/' ${TOPDIR}/pro-data/seafevents.conf
+fi
 
 # -------------------------------------------
 # Fix permissions
@@ -597,15 +622,7 @@ cat > ${seafile_dir}/aio_seafile-server.log<<EOF
   -----------------------------------------------------------------
 
   For free community support visit:   https://forum.seafile-server.org
-  For paid commercial support visit:  https://seafile.com.de
-
-
-
-
-  Contribute
-  -----------------------------------------------------------------
-  Please contact alexander.jackson@seafile.com.de
-  for bugs or suggestions about this installer. Thank you!
+  For paid commercial support visit:  https://seafile.com
 
 EOF
 
