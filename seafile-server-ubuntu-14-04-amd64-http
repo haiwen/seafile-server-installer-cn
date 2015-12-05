@@ -134,7 +134,7 @@ fi
 # Additional requirements
 # -------------------------------------------
 apt-get update
-apt-get install -y sudo python-pip python-setuptools python-imaging python-mysqldb \
+apt-get install -y sudo python-pip python-setuptools python-imaging python-mysqldb python-ldap \
 openjdk-7-jre memcached python-memcache pwgen curl openssl poppler-utils libpython2.7 libreoffice \
 libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx
 
@@ -629,12 +629,6 @@ EOF
 chmod 600 ${seafile_dir}/aio_seafile-server.log
 chown -R ${SEAFILE_USER}.nogroup ${seafile_dir}/aio_seafile-server.log
 
-
-# -------------------------------------------
-# Install seafile-server-change-address script
-# -------------------------------------------
-wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-change-address -O /usr/local/sbin/seafile-server-change-address
-chmod 500 /usr/local/sbin/seafile-server-change-address
 
 clear
 
