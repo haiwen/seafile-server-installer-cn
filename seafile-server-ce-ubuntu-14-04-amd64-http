@@ -342,7 +342,7 @@ DEFAULT_SEAFILE_DATA_DIR=${TOPDIR}/seafile-data
 DEFAULT_CONF_DIR=${TOPDIR}/conf
 SEAFILE_DATA_DIR=${TOPDIR}/seafile-data
 LIBRARY_TEMPLATE_DIR=${SEAFILE_DATA_DIR}/library-template
-DEST_SETTINGS_PY=${TOPDIR}/seahub_settings.py
+DEST_SETTINGS_PY=${TOPDIR}/conf/seahub_settings.py
 CCNET_INIT=${INSTALLPATH}/seafile/bin/ccnet-init
 SEAF_SERVER_INIT=${INSTALLPATH}/seafile/bin/seaf-server-init
 MEDIA_DIR=${INSTALLPATH}/seahub/media
@@ -350,23 +350,24 @@ ORIG_AVATAR_DIR=${INSTALLPATH}/seahub/media/avatars
 DEST_AVATAR_DIR=${TOPDIR}/seahub-data/avatars
 SEAFILE_SERVER_SYMLINK=${TOPDIR}/seafile-server-latest
 
+mkdir -p ${DEFAULT_CONF_DIR}
 
 # -------------------------------------------
 # Create ccnet conf
 # -------------------------------------------
 export SEAFILE_LD_LIBRARY_PATH=${INSTALLPATH}/seafile/lib/:${INSTALLPATH}/seafile/lib64:${LD_LIBRARY_PATH}
 LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH "${CCNET_INIT}" -c "${DEFAULT_CCNET_CONF_DIR}" \
-  --name "${SERVER_NAME}" --host "${IP_OR_DOMAIN}"
+  --name "${SERVER_NAME}" --host "${IP_OR_DOMAIN}" -F "${DEFAULT_CONF_DIR}"
 
 # Fix service url
-eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = http:\/\/${IP_OR_DOMAIN}/' ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf"
+eval "sed -i 's/^SERVICE_URL.*/SERVICE_URL = http:\/\/${IP_OR_DOMAIN}/' ${DEFAULT_CONF_DIR}/ccnet.conf"
 
 
 # -------------------------------------------
 # Create seafile conf
 # -------------------------------------------
 LD_LIBRARY_PATH=$SEAFILE_LD_LIBRARY_PATH ${SEAF_SERVER_INIT} --seafile-dir "${SEAFILE_DATA_DIR}" \
-  --fileserver-port ${FILESERVER_PORT}
+  --fileserver-port ${FILESERVER_PORT} -F "${DEFAULT_CONF_DIR}"
 
 
 # -------------------------------------------
@@ -378,7 +379,6 @@ echo "${SEAFILE_DATA_DIR}" > "${DEFAULT_CCNET_CONF_DIR}/seafile.ini"
 # -------------------------------------------
 # Configure Seafile WebDAV Server(SeafDAV)
 # -------------------------------------------
-mkdir -p ${DEFAULT_CONF_DIR}
 cat > ${DEFAULT_CONF_DIR}/seafdav.conf <<EOF
 [WEBDAV]
 enabled = true
@@ -432,7 +432,7 @@ cp -f ${SRC_DOCS_DIR}/*.doc ${LIBRARY_TEMPLATE_DIR}
 # -------------------------------------------
 # Configuring ccnet.conf
 # -------------------------------------------
-cat >> ${DEFAULT_CCNET_CONF_DIR}/ccnet.conf <<EOF
+cat >> ${DEFAULT_CONF_DIR}/ccnet.conf <<EOF
 
 [Database]
 ENGINE = mysql
@@ -447,7 +447,7 @@ EOF
 # -------------------------------------------
 # Configuring seafile.conf
 # -------------------------------------------
-cat >> ${DEFAULT_SEAFILE_DATA_DIR}/seafile.conf <<EOF
+cat >> ${DEFAULT_CONF_DIR}/seafile.conf <<EOF
 
 [database]
 type = mysql
@@ -543,7 +543,7 @@ mv ${INSTALLPATH}/check_init_admin.py.backup ${INSTALLPATH}/check_init_admin.py
 if is_pro; then
     PRO_PY=${INSTALLPATH}/pro/pro.py
     $PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub-db
-    sed -i 's/enabled = false/enabled = true/' ${TOPDIR}/pro-data/seafevents.conf
+    sed -i 's/enabled = false/enabled = true/' ${TOPDIR}/conf/seafevents.conf
 fi
 
 # -------------------------------------------
