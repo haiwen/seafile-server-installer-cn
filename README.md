@@ -36,7 +36,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
  
     ![工具按钮](http://manual-cn.seafile.com/images/tools-button.png)
 
-4. 进入设置页面填写正确的服务器对外的 URL 和 FILE_SERVER_ROOT，比如
+4. 进入设置页面填写正确的服务器对外的 SERVICE_URL 和 FILE_SERVER_ROOT，比如
 
     ```
     SERVICE_URL = http://www.myseafile.com
