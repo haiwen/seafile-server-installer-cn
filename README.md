@@ -52,6 +52,13 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 rm -rf /opt/seafile
 ```
 
+## 启动关闭服务
+
+自动安装脚本会在系统中安装开机自动启动脚本。您也可以使用该脚本来关闭/启动 Seafile 服务，命令如下：
+
+    service seafile-server stop
+    service seafile-server start
+
 ## 其他高级配置
 
 ### 备份 mysql
