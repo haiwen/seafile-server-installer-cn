@@ -19,6 +19,10 @@
 #
 #
 
+if [[ $HOME == "" ]]; then
+    export HOME=/root
+fi
+
 if [[ $SEAFILE_DEBUG != "" ]]; then
     set -x
 fi
