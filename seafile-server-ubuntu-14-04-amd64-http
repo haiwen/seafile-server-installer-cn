@@ -18,7 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#set -x
+
+if [[ $SEAFILE_DEBUG != "" ]]; then
+    set -x
+fi
 set -e
 
 if [[ "$#" -ne 1 ]]; then
@@ -50,25 +53,27 @@ cat <<EOF
 
 EOF
 
-PS3="Which Seafile version would you like to install? "
-select SEAFILE_SERVER_VERSION in CE PRO ABORT; do
-    case "${SEAFILE_SERVER_VERSION}" in
-        ABORT)
-            echo "Aborting"
-            break
-            ;;
-        "")
-            echo "$REPLY: Wrong value. Select 1 or 2."
-            ;;
-        *)
-            if [[ ${SEAFILE_SERVER_VERSION} = "PRO" ]]; then
-                SEAFILE_PRO=1
-            else
-                SEAFILE_PRO=0
-            fi
-            break
-    esac
-done
+if [[ ${SEAFILE_PRO} == "" ]]; then
+    PS3="Which Seafile version would you like to install? "
+    select SEAFILE_SERVER_VERSION in CE PRO ABORT; do
+        case "${SEAFILE_SERVER_VERSION}" in
+            ABORT)
+                echo "Aborting"
+                break
+                ;;
+            "")
+                echo "$REPLY: Wrong value. Select 1 or 2."
+                ;;
+            *)
+                if [[ ${SEAFILE_SERVER_VERSION} = "PRO" ]]; then
+                    SEAFILE_PRO=1
+                else
+                    SEAFILE_PRO=0
+                fi
+                break
+        esac
+    done
+fi
 
 is_pro() {
     if [[ "$SEAFILE_PRO" == "1" ]]; then
