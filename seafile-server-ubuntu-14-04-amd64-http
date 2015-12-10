@@ -19,10 +19,13 @@
 #
 #
 
+set -e
+
 if [[ $SEAFILE_DEBUG != "" ]]; then
     set -x
 fi
-set -e
+
+export HOME=/root
 
 if [[ "$#" -ne 1 ]]; then
     echo "You must specif Seafile version to install"
