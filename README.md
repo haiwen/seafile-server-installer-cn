@@ -70,3 +70,23 @@ rm -rf /opt/seafile
 ### 配置邮件发送
 
 参考 http://manual-cn.seafile.com/config/sending_email.html
+
+### 版本升级
+
+* 切换为 root 用户
+* 关闭 seafile-server 相关服务：servie seafile-server stop
+* 切换为 seafile 用户：su - seafile -s /bin/bash
+* 下载高版本的安装包到 /opt/seafile 目录，并解压
+* 进入安装包下的 upgrade 目录，执行相关的升级脚本，具体可参考 http://manual.seafile.com/deploy/upgrade.html
+* 退出 seafile 用户：exit
+* 启动 seafile-server 相关服务：service seafile-server start
+
+### 迁移社区版到专业版
+
+* 切换为 root 用户
+* 关闭 seafile-server 相关服务：servie seafile-server stop
+* 切换为 seafile 用户：su - seafile -s /bin/bash
+* 下载专业版安装包到 /opt/seafile 目录，并解压
+* 进入解压好的安装包目录，执行 ./pro/pro.py setup --migrate，具体可参考 http://manual.seafile.com/deploy_pro/migrate_from_seafile_community_server.html
+* 退出 seafile 用户：exit
+* 启动 seafile-server 相关服务：service seafile-server start
