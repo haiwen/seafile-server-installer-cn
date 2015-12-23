@@ -1,6 +1,6 @@
 # Seafile 安装脚本
 
-这里的安装脚本可以帮助您快速的安装好 Seafile 服务器，并配置好 MariaDB, Memcached, WebDAV, Ngnix 和开机自动启动脚本。
+这里的安装脚本可以帮助您快速的安装好 Seafile 服务器，并配置好 MariaDB, Memcached, WebDAV, Ngnix 和开机自动启动脚本。注意，安装脚本会创建 seafile 系统用户，并以该用户来运行 Seafile 服务。版本升级时需要使用该用户来执行升级步骤，以保证文件权限的正确性。具体见本文末尾。
 
 
 ### 使用步骤
@@ -24,7 +24,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 * 如果要安装专业版, 需要先将下载好的专业版的包 `seafile-pro-server_5.0.1_x86-64.tar.gz` 放到 `/opt/` 目录下
 * 如果是安装开源版，安装脚本在执行过程中会检查**/opt**目录下是否有指定版本号的安装包，如果存在则会安装此包，否则会从 Seafile 网站下载。所以，为了避免因下载失败而导致安装中断，您可以提前下载好安装包放到**/opt/**目录下。
 
-该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。
+该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。(你也可以查看安装日志 /opt/seafile/aio_seafile-server.log)
 
 #### 通过 Web UI 对服务器进行配置
 
@@ -52,12 +52,13 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 rm -rf /opt/seafile
 ```
 
-## 启动关闭服务
+### 启动关闭服务
 
 自动安装脚本会在系统中安装开机自动启动脚本。您也可以使用该脚本来关闭/启动 Seafile 服务，命令如下：
 
     service seafile-server stop
     service seafile-server start
+
 
 ## 其他高级配置
 
@@ -70,6 +71,8 @@ rm -rf /opt/seafile
 ### 配置邮件发送
 
 参考 http://manual-cn.seafile.com/config/sending_email.html
+
+## 升级和其他问题
 
 ### 版本升级
 
