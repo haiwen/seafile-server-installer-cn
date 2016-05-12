@@ -5,12 +5,18 @@
 
 ### 使用步骤
 
-安装干净的 Ubuntu 14.04 系统并切换成 root 账号 (sudo -i)。
+安装干净的 Ubuntu 14.04 或 CentOS 7 系统并切换成 root 账号 (sudo -i)。
 
 获取安装脚本
 
+Ubuntu 14.04:
 ```
 wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ubuntu-14-04-amd64-http
+```
+
+CentOS 7:
+```
+wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-centos-7-amd64-http
 ```
 
 运行安装脚本并指定要安装的版本 (5.0.2)
@@ -24,7 +30,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 * 如果要安装专业版, 需要先将下载好的专业版的包 `seafile-pro-server_5.0.1_x86-64.tar.gz` 放到 `/opt/` 目录下
 * 如果是安装开源版，安装脚本在执行过程中会检查**/opt**目录下是否有指定版本号的安装包，如果存在则会安装此包，否则会从 Seafile 网站下载。所以，为了避免因下载失败而导致安装中断，您可以提前下载好安装包放到**/opt/**目录下。
 
-该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。(你也可以查看安装日志 /opt/seafile/aio_seafile-server.log)
+该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。(你也可以查看安装日志 /aio_seafile-server.log)
 
 #### 通过 Web UI 对服务器进行配置
 
@@ -56,9 +62,20 @@ rm -rf /opt/seafile
 
 自动安装脚本会在系统中安装开机自动启动脚本。您也可以使用该脚本来关闭/启动 Seafile 服务，命令如下：
 
-    service seafile-server stop
-    service seafile-server start
+Ubuntu 14.04:
+```
+service seafile-server stop
+service seafile-server start
+```
 
+CentOS 7:
+```
+service seafile stop
+service seahub stop
+
+service seafile start
+service seahub start
+```
 
 ## 其他高级配置
 
@@ -66,7 +83,7 @@ rm -rf /opt/seafile
 
 * 拷贝 `db-backup` 目录到 `/opt/seafile`
 * 修改 `db-backup/db_backup.sh` 中的 `USER` `PASSWD`
-* 执行 `crontab -e` 并添加内容 `0 1 * * * * /opt/seafile/db-backup/db_backup.sh` (每天凌晨1：00进行备份)
+* 执行 `crontab -e` 并添加内容 `0 1 * * * /opt/seafile/db-backup/db_backup.sh` (每天凌晨1：00进行备份)
 
 ### 配置邮件发送
 
@@ -77,19 +94,15 @@ rm -rf /opt/seafile
 ### 版本升级
 
 * 切换为 root 用户
-* 关闭 seafile-server 相关服务：service seafile-server stop
-* 切换为 seafile 用户：su - seafile -s /bin/bash
+* 关闭 seafile-server 相关服务
 * 下载高版本的安装包到 /opt/seafile 目录，并解压
 * 进入安装包下的 upgrade 目录，执行相关的升级脚本，具体可参考 http://manual.seafile.com/deploy/upgrade.html
-* 退出 seafile 用户：exit
-* 启动 seafile-server 相关服务：service seafile-server start
+* 启动 seafile-server 相关服务
 
 ### 迁移社区版到专业版
 
 * 切换为 root 用户
-* 关闭 seafile-server 相关服务：service seafile-server stop
-* 切换为 seafile 用户：su - seafile -s /bin/bash
+* 关闭 seafile-server 相关服务
 * 下载专业版安装包到 /opt/seafile 目录，并解压
 * 进入解压好的安装包目录，执行 ./pro/pro.py setup --migrate，具体可参考 http://manual.seafile.com/deploy_pro/migrate_from_seafile_community_server.html
-* 退出 seafile 用户：exit
-* 启动 seafile-server 相关服务：service seafile-server start
+* 启动 seafile-server 相关服务
