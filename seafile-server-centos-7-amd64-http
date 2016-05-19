@@ -418,13 +418,13 @@ CACHES = {
     }
 }
 
-EMAIL_USE_TLS                       = False
-EMAIL_HOST                          = 'localhost'
-EMAIL_HOST_USER                     = ''
-EMAIL_HOST_PASSWORD                 = ''
-EMAIL_PORT                          = '25'
-DEFAULT_FROM_EMAIL                  = EMAIL_HOST_USER
-SERVER_EMAIL                        = EMAIL_HOST_USER
+# EMAIL_USE_TLS                       = False
+# EMAIL_HOST                          = 'localhost'
+# EMAIL_HOST_USER                     = ''
+# EMAIL_HOST_PASSWORD                 = ''
+# EMAIL_PORT                          = '25'
+# DEFAULT_FROM_EMAIL                  = EMAIL_HOST_USER
+# SERVER_EMAIL                        = EMAIL_HOST_USER
 
 TIME_ZONE                           = '${TIME_ZONE}'
 SITE_BASE                           = 'http://${IP_OR_DOMAIN}'
@@ -487,7 +487,7 @@ fi
 # -------------------------------------------
 # Final report
 # -------------------------------------------
-cat > ${seafile_dir}/aio_seafile-server.log<<EOF
+cat > ${TOPDIR}/aio_seafile-server.log<<EOF
 
   Your Seafile server is installed
   -----------------------------------------------------------------
@@ -503,7 +503,7 @@ cat > ${seafile_dir}/aio_seafile-server.log<<EOF
   Seafile DB Credentials:  Check /opt/seafile/.my.cnf
   Root DB Credentials:     Check /root/.my.cnf
 
-  This report is also saved to ${seafile_dir}/aio_seafile-server.log
+  This report is also saved to ${TOPDIR}/aio_seafile-server.log
 
 
 
@@ -551,8 +551,8 @@ cat > ${seafile_dir}/aio_seafile-server.log<<EOF
 
 EOF
 
-chmod 600 ${seafile_dir}/aio_seafile-server.log
+chmod 600 ${TOPDIR}/aio_seafile-server.log
 
 clear
 
-cat ${seafile_dir}/aio_seafile-server.log
+cat ${TOPDIR}/aio_seafile-server.log
