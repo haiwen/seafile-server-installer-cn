@@ -1,0 +1,15 @@
+sudo: required
+language: bash
+
+services:
+  - docker
+
+env:
+  global:
+    - LANG=en_US.UTF-8
+    - LC_ALL=en_US.UTF-8
+
+before_install:
+  - docker run xiez/seafile-pro:v1.2 /bin/bash -c "export TERM=xterm && echo 2 | bash seafile-server-ubuntu-14-04-amd64-http 5.1.10"
+
+script: make test
