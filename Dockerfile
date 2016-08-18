@@ -1,11 +1,13 @@
 FROM ubuntu:14.04
 MAINTAINER Zheng Xie <xie.zheng@seafile.com>
 
+RUN apt-get update
+RUN apt-get install -y sudo wget python-pip python-setuptools python-imaging python-mysqldb python-ldap python-urllib3 \
+openjdk-7-jre memcached python-memcache pwgen curl openssl poppler-utils libpython2.7 libreoffice \
+libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx
+
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
-
-RUN apt-get update
-RUN apt-get install -y wget
 
 WORKDIR /root
 ADD . /root/
