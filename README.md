@@ -39,8 +39,12 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 安装完成后，您需要通过 Web UI 服务器进行基本的配置，以便能正常的从网页端进行文件的上传和下载：
 
 1. 首先在浏览器中输入服务器的地址，并用管理员账号和初始密码登录
-2. 点击界面的右上角的工具按钮进入管理员界面
- 
+2. 点击界面右上角的用户头像，在下拉菜单中点击 `System Admin` 按钮进入管理界面：
+
+    ![进入系统管理界面](http://manual-cn.seafile.com/images/system-admin-entrance.png)
+
+    如果你使用的 Seafile 版本低于 6.0.0，可以通过点击网页右上侧的 tools 按钮（在个人头像旁)进入管理界面：
+
     ![工具按钮](http://manual-cn.seafile.com/images/tools-button.png)
 
 3. 进入设置页面填写正确的服务器对外的 SERVICE_URL 和 FILE_SERVER_ROOT，比如
@@ -49,7 +53,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
     SERVICE_URL: http://www.myseafile.com
     FILE_SERVER_ROOT: 'http://www.myseafile.com/seafhttp'
     ```
-    
+
 现在您可以退出管理员界面，并进行基本的测试。关于服务器的配置选项介绍和日常运维可以参考 http://manual-cn.seafile.com/config/index.html
 
 ### 如果安装脚本出错
