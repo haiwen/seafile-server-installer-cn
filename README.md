@@ -7,7 +7,9 @@
 
 ### 使用步骤
 
-安装干净的 Ubuntu 14.04 或 CentOS 7 系统并切换成 root 账号 (sudo -i)。
+安装干净的 Ubuntu 14.04 或 CentOS 7 系统，并**做好镜像**。
+
+切换成 root 账号 (sudo -i)
 
 获取安装脚本
 
@@ -32,7 +34,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 * 如果要安装专业版, 需要先将下载好的专业版的包 `seafile-pro-server_5.0.1_x86-64.tar.gz` 放到 `/opt/` 目录下
 * 如果是安装开源版，安装脚本在执行过程中会检查**/opt**目录下是否有指定版本号的安装包，如果存在则会安装此包，否则会从 Seafile 网站下载。所以，为了避免因下载失败而导致安装中断，您可以提前下载好安装包放到**/opt/**目录下。
 
-该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。(你也可以查看安装日志 /opt/seafile/aio_seafile-server.log)
+该脚本运行完后会在命令行中打印配置信息和管理员账号密码，请仔细阅读。(你也可以查看安装日志 /opt/seafile/aio_seafile-server.log)，MySQL 密码在 `/root/.my.cnf` 中。
 
 #### 通过 Web UI 对服务器进行配置
 
@@ -54,11 +56,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 
 ### 如果安装脚本出错
 
-如果安装脚本出错，您可以用下列命名来清空重试 (或者重置虚拟机)。
-
-```
-rm -rf /opt/seafile
-```
+如果安装脚本出错，您需要重置虚拟机到干净的镜像。
 
 ### 启动关闭服务
 
