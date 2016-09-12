@@ -161,7 +161,7 @@ firewall-cmd --reload
 # extra packages for enterprise linux
 yum install epel-release -y
 yum upgrade -y
-yum install python-setuptools python-imaging MySQL-python python-memcached memcached \
+yum install python-setuptools python-imaging MySQL-python python-memcached memcached python-urllib3 \
     pwgen curl openssl python-ldap java-1.7.0-openjdk poppler-utils libreoffice \
     libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts -y
 
