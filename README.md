@@ -7,7 +7,7 @@
 
 ### 使用步骤
 
-安装干净的 Ubuntu 14.04 或 CentOS 7 系统，并**做好镜像** (如果安装失败需要还原到镜像)。
+安装干净的 Ubuntu 14.04, 16.04 或 CentOS 7 系统，并**做好镜像** (如果安装失败需要还原到镜像)。
 
 切换成 root 账号 (sudo -i)
 
@@ -16,6 +16,11 @@
 Ubuntu 14.04:
 ```
 wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ubuntu-14-04-amd64-http
+```
+
+Ubuntu 16.04（适用于 6.0.0 及以上版本）:
+```
+wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ubuntu-16-04-amd64-http
 ```
 
 CentOS 7:
@@ -41,9 +46,14 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
 安装完成后，您需要通过 Web UI 服务器进行基本的配置，以便能正常的从网页端进行文件的上传和下载：
 
 1. 首先在浏览器中输入服务器的地址，并用管理员账号和初始密码登录
+
 2. 点击界面的右上角的工具按钮进入管理员界面
- 
-    ![工具按钮](http://manual-cn.seafile.com/images/tools-button.png)
+
+  ![工具按钮](http://manual-cn.seafile.com/images/tools-button.png)
+
+  如果你使用 6.0.0 及以上版本，请点击这里
+
+  ![管理员入口](http://manual-cn.seafile.com/images/system-admin-entrance.png)
 
 3. 进入设置页面填写正确的服务器对外的 SERVICE_URL 和 FILE_SERVER_ROOT，比如
 
@@ -51,7 +61,7 @@ bash seafile-server-ubuntu-14-04-amd64-http 5.0.2
     SERVICE_URL: http://www.myseafile.com
     FILE_SERVER_ROOT: 'http://www.myseafile.com/seafhttp'
     ```
-    
+
 现在您可以退出管理员界面，并进行基本的测试。关于服务器的配置选项介绍和日常运维可以参考 http://manual-cn.seafile.com/config/index.html
 
 ### 如果安装脚本出错
