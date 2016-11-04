@@ -1,8 +1,9 @@
 #!/bin/bash
 #
-# seafile-server-installer/seafile-server-ubuntu-14-04-amd64
+# seafile-server-installer/seafile-server-ubuntu-16-04-amd64
 #
 # Copyright 2015, Alexander Jackson <alexander.jackson@seafile.de>
+# Copyright 2016, Zheng Xie <xie.zheng@seafile.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -37,7 +38,7 @@ fi
 clear
 cat <<EOF
 
-  This script installs the community edition of the Seafile Server on a Ubuntu 14.04 (Trusty) 64bit
+  This script installs the community edition of the Seafile Server on a Ubuntu 16.04 (Xenial) 64bit
   - Newest Seafile server version, MariaDB, Memcached, NGINX -
   -----------------------------------------------------------------
 
@@ -486,7 +487,7 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   Seafile support options
   -----------------------------------------------------------------
 
-  For free community support visit:   https://forum.seafile-server.org
+  For free community support visit:   https://bbs.seafile.com
   For paid commercial support visit:  https://seafile.com
 
 EOF
