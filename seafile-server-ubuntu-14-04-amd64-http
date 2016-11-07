@@ -485,7 +485,7 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   Seafile support options
   -----------------------------------------------------------------
 
-  For free community support visit:   https://forum.seafile-server.org
+  For free community support visit:   https://bbs.seafile.com
   For paid commercial support visit:  https://seafile.com
 
 EOF
