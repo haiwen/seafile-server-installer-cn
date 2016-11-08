@@ -2,8 +2,7 @@
 
 # Seafile 安装脚本
 
-这里的安装脚本可以帮助您快速的安装好 Seafile 服务器，并配置好 MariaDB, Memcached, WebDAV, Ngnix 和开机自动启动脚本。注意，安装脚本会创建 seafile 系统用户，并以该用户来运行 Seafile 服务。版本升级时需要使用该用户来执行升级步骤，以保证文件权限的正确性。具体见本文末尾。
-
+这里的安装脚本可以帮助您快速的安装好 Seafile 服务器，并配置好 MariaDB, Memcached, WebDAV, Ngnix 和开机自动启动脚本。
 
 ### 使用步骤
 
