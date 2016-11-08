@@ -77,6 +77,8 @@ service seafile-server stop
 service seafile-server start
 ```
 
+###CentOS7操作这些服务不能直接用service去关闭和开启，应该利用安装生成各个服务bin目录下得可执行文件加上配置文件等参数来执行开启和关闭，这里麻烦作者来更新下，谢谢。
+
 CentOS 7:
 ```
 service seafile stop
