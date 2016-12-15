@@ -99,7 +99,6 @@ echo
 # Vars
 # -------------------------------------------
 SEAFILE_ADMIN=admin@seafile.local
-SERVER_NAME=$(hostname -s)
 IP_OR_DOMAIN=$(hostname -i)
 SEAFILE_VERSION=$1
 TIME_ZONE=Asia/Shanghai
@@ -431,7 +430,6 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   Your Seafile server is installed
   -----------------------------------------------------------------
 
-  Server Name:         ${SERVER_NAME}
   Server Address:      http://${IP_OR_DOMAIN}
 
   Seafile Admin:       ${SEAFILE_ADMIN}
