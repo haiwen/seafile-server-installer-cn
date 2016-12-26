@@ -400,7 +400,9 @@ eval "sed -i 's/= ask_admin_password()/= \"${SEAFILE_ADMIN_PW}\"/' ${INSTALLPATH
 # -------------------------------------------
 ${INSTALLPATH}/seafile.sh start
 ${INSTALLPATH}/seahub.sh start
+sleep 2                         # sleep for a while, otherwise seahub will not be stopped
 ${INSTALLPATH}/seahub.sh stop
+sleep 1
 ${INSTALLPATH}/seafile.sh stop
 
 
