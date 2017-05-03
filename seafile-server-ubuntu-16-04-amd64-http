@@ -100,7 +100,7 @@ echo
 # Vars
 # -------------------------------------------
 SEAFILE_ADMIN=admin@seafile.local
-IP_OR_DOMAIN=$(hostname -i)
+IP_OR_DOMAIN=127.0.0.1
 SEAFILE_VERSION=$1
 TIME_ZONE=Asia/Shanghai
 
