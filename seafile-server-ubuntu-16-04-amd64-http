@@ -209,6 +209,7 @@ service nginx restart
 if [[ -f "/root/.my.cnf" ]] ;
 then
   echo "MariaDB installed before, skip this part"
+  SQLROOTPW=`sed -n 's/password=//p' /root/.my.cnf`
 else
   DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
 
@@ -224,7 +225,6 @@ EOF
 
   chmod 600 /root/.my.cnf
 fi
-
 
 # -------------------------------------------
 # Seafile init script
@@ -306,15 +306,21 @@ mv ${SEAFILE_SERVER_PACKAGE} installed
 # -------------------------------------------
 # Seafile DB
 # -------------------------------------------
-SQLSEAFILEPW=$(pwgen)
+if [[ -f "/opt/seafile.my.cnf" ]] ;
+then
+  echo "MariaDB installed before, skip this part"
+  SQLSEAFILEPW=`sed -n 's/password=//p' /opt/seafile.my.cnf`
+else
+  SQLSEAFILEPW=$(pwgen)
 
-cat > /opt/seafile/.my.cnf <<EOF
+  cat > /opt/seafile.my.cnf <<EOF
 [client]
 user=seafile
 password=$SQLSEAFILEPW
 EOF
 
-chmod 600 /opt/seafile/.my.cnf
+  chmod 600 /opt/seafile.my.cnf
+fi
 
 # -------------------------------------------
 # Go to /opt/seafile/seafile-pro-server-${SEAFILE_VERSION}
@@ -440,7 +446,7 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
 
   Seafile Data Dir:    ${SEAFILE_DATA_DIR}
 
-  Seafile DB Credentials:  Check /opt/seafile/.my.cnf
+  Seafile DB Credentials:  Check /opt/seafile.my.cnf
   Root DB Credentials:     Check /root/.my.cnf
 
   This report is also saved to ${TOPDIR}/aio_seafile-server.log
