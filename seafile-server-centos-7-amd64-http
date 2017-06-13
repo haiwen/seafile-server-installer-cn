@@ -179,6 +179,8 @@ server {
       listen 80;
       server_name  "";
 
+      proxy_set_header X-Forwarded-For $remote_addr;
+
       location / {
           fastcgi_pass    127.0.0.1:8000;
           fastcgi_param   SCRIPT_FILENAME     $document_root$fastcgi_script_name;
@@ -191,6 +193,7 @@ server {
           fastcgi_param   SERVER_ADDR         $server_addr;
           fastcgi_param   SERVER_PORT         $server_port;
           fastcgi_param   SERVER_NAME         $server_name;
+          fastcgi_param   REMOTE_ADDR         $remote_addr;
 
           access_log      /var/log/nginx/seahub.access.log;
           error_log       /var/log/nginx/seahub.error.log;
@@ -217,6 +220,7 @@ server {
         fastcgi_param   SERVER_ADDR         $server_addr;
         fastcgi_param   SERVER_PORT         $server_port;
         fastcgi_param   SERVER_NAME         $server_name;
+        fastcgi_param   REMOTE_ADDR         $remote_addr;
 
         client_max_body_size 0;
 
