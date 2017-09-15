@@ -460,13 +460,16 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   Next you should manually complete the following steps
   -----------------------------------------------------------------
 
-  1) Run seafile-server-change-address to add your Seafile servers DNS name
+  1) Log in to Seafile and configure your server domain via the system
+     admin area if applicable.
 
   2) If this server is behind a firewall, you need to ensure that
      tcp port 80 is open.
 
   3) Seahub tries to send emails via the local server. Install and
-     configure Postfix for this to work.
+     configure Postfix for this to work or
+     check https://manual.seafile.com/config/sending_email.html
+     for instructions on how to use an existing email account via SMTP.
 
 
 
