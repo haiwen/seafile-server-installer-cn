@@ -160,9 +160,11 @@ firewall-cmd --reload
 # extra packages for enterprise linux
 yum install epel-release -y
 yum upgrade -y
-yum install python-setuptools python-imaging MySQL-python python-memcached memcached python-urllib3 \
+yum install python-setuptools python-imaging MySQL-python memcached python-urllib3 \
     pwgen curl openssl python-ldap java-1.7.0-openjdk poppler-utils libreoffice python-requests \
-    libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts -y
+    libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts \
+    gcc libffi-devel python-devel openssl-devel libmemcached libmemcached-devel python2-pip -y
+pip install --upgrade pylibmc django-pylibmc
 
 # start memcached on system boot
 systemctl enable memcached
@@ -421,7 +423,7 @@ cat >> ${DEST_SETTINGS_PY} <<EOF
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
     'LOCATION': '127.0.0.1:11211',
     }
 }
