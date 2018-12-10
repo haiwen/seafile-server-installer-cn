@@ -144,8 +144,9 @@ apt-get install -y python2.7 sudo python-pip python-setuptools python-mysqldb py
 openjdk-8-jre memcached libmemcached-dev zlib1g-dev pwgen curl openssl poppler-utils libpython2.7 libreoffice \
 libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx python-requests
 
-pip install --upgrade pylibmc django-pylibmc
+pip install pylibmc==1.6.0 django-pylibmc==0.6.1
 pip install --timeout=3600 Pillow==4.3.0
+pip install psd-tools==1.4
 
 rm /etc/nginx/sites-enabled/*
 
