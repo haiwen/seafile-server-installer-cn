@@ -164,8 +164,9 @@ yum install python-setuptools MySQL-python memcached python-urllib3 \
     pwgen curl openssl python-ldap java-1.7.0-openjdk poppler-utils libreoffice python-requests \
     libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts \
     gcc libffi-devel python-devel openssl-devel libmemcached libmemcached-devel python2-pip -y
-pip install --upgrade pylibmc django-pylibmc
+pip install pylibmc==1.6.0 django-pylibmc==0.6.1
 pip install --timeout=3600 Pillow==4.3.0
+pip install psd-tools==1.4
 
 # start memcached on system boot
 systemctl enable --now memcached
