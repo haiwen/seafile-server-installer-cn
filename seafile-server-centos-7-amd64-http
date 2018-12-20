@@ -208,6 +208,7 @@ server {
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_connect_timeout  36000s;
         proxy_read_timeout  36000s;
+        proxy_request_buffering    off;
     }
     location /media {
         root /opt/seafile/seafile-server-latest/seahub;
