@@ -151,8 +151,9 @@ sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
 # -------------------------------------------
 yum install firewalld fail2ban -y
 # https://www.optimox.de/tutorials/linux-allgemein/centos-firewall-konfigurieren-mit-firewalld
-for i in ssh http https ; do firewall-cmd --zone=public --add-service=${i} --permanent ; done
-firewall-cmd --reload
+systemctl status firewalld &> /dev/null \
+&& for i in ssh http https ; do firewall-cmd --zone=public --add-service=${i} --permanent ; done \
+&& firewall-cmd --reload
 
 # -------------------------------------------
 # Additional requirements
