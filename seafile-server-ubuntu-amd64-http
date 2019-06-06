@@ -434,7 +434,9 @@ fi
 # Fix permissions
 # -------------------------------------------
 chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R ${SEAFILE_SERVER_HOME}
-chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R /tmp/seafile-office-output/
+if [[ -d /tmp/seafile-office-output/ ]]; then
+    chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R /tmp/seafile-office-output/
+fi
 
 # -------------------------------------------
 # Start seafile server
