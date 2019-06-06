@@ -338,6 +338,7 @@ ExecStart=${SEAFILE_SERVER_HOME}/seafile-server-latest/seafile.sh start
 ExecStop=${SEAFILE_SERVER_HOME}/seafile-server-latest/seafile.sh stop
 User=${SEAFILE_SERVER_USER}
 Group=${SEAFILE_SERVER_USER}
+LimitNOFILE=infinity
 Type=oneshot
 RemainAfterExit=yes
 
@@ -523,7 +524,10 @@ fi
 # Fix permissions
 # -------------------------------------------
 chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R ${SEAFILE_SERVER_HOME}
-chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R /tmp/seafile-office-output/
+
+if [[ -d /tmp/seafile-office-output/ ]]; then
+    chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R /tmp/seafile-office-output/
+fi
 
 # -------------------------------------------
 # Restart seafile server
