@@ -169,15 +169,25 @@ systemctl status firewalld &> /dev/null \
 # Additional requirements
 # -------------------------------------------
 # extra packages for enterprise linux
+
 yum install epel-release -y
 yum upgrade -y
-yum install python-setuptools MySQL-python memcached python-urllib3 \
-    pwgen curl openssl python-ldap java-1.8.0-openjdk poppler-utils libreoffice python-requests \
-    libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts \
-    gcc libffi-devel python-devel openssl-devel libmemcached libmemcached-devel python2-pip -y
-pip install pylibmc==1.6.0 django-pylibmc==0.6.1
-pip install --timeout=3600 Pillow==4.3.0
-pip install psd-tools==1.4
+
+if [[ ${SEAFILE_VERSION} =~ 6\.[0-9]*\.[0-9]* ]]; then
+    yum install python-setuptools MySQL-python memcached python-urllib3 \
+        pwgen curl openssl python-ldap java-1.8.0-openjdk poppler-utils libreoffice python-requests \
+        libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts \
+        gcc libffi-devel python-devel openssl-devel libmemcached libmemcached-devel python2-pip -y
+
+    pip install pylibmc==1.6.0 django-pylibmc==0.6.1
+    pip install --timeout=3600 Pillow==4.3.0
+    pip install psd-tools==1.4
+else
+    yum install python-setuptools MySQL-python memcached python-urllib3 \
+        pwgen curl openssl python-ldap java-1.8.0-openjdk poppler-utils libreoffice \
+        libreoffice-headless libreoffice-pyuno wqy-microhei-fonts wqy-zenhei-fonts wqy-unibit-fonts \
+        libffi-devel openssl-devel libmemcached -y
+fi
 
 # start memcached on system boot
 systemctl enable --now memcached
@@ -190,6 +200,8 @@ systemctl enable nginx
 rm -rf /etc/nginx/conf.d/*
 
 cat > /etc/nginx/conf.d/seafile.conf << EOF
+log_format seafileformat '$http_x_forwarded_for $remote_addr [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $upstream_response_time';
+
 server {
     listen 80;
     server_name seafile.example.com;
@@ -208,7 +220,7 @@ server {
          # used for view/edit office file via Office Online Server
          client_max_body_size 0;
 
-         access_log      /var/log/nginx/seahub.access.log;
+         access_log      /var/log/nginx/seahub.access.log seafileformat;
          error_log       /var/log/nginx/seahub.error.log;
     }
         
@@ -220,6 +232,9 @@ server {
         proxy_connect_timeout  36000s;
         proxy_read_timeout  36000s;
         proxy_request_buffering    off;
+
+        access_log      /var/log/nginx/seafhttp.access.log seafileformat;
+        error_log       /var/log/nginx/seafhttp.error.log;
     }
     location /media {
         root ${SEAFILE_SERVER_HOME}/seafile-server-latest/seahub;
@@ -240,7 +255,7 @@ server {
 
         client_max_body_size 0;
 
-        access_log      /var/log/nginx/seafdav.access.log;
+        access_log      /var/log/nginx/seafdav.access.log seafileformat;
         error_log       /var/log/nginx/seafdav.error.log;
     }
 }
@@ -331,7 +346,7 @@ fi
 cat > /etc/systemd/system/seafile.service << EOF
 [Unit]
 Description=Seafile Server
-After=network.target mariadb.service
+After=network.target remote-fs.target mariadb.service
 
 [Service]
 ExecStart=${SEAFILE_SERVER_HOME}/seafile-server-latest/seafile.sh start
@@ -524,7 +539,6 @@ fi
 # Fix permissions
 # -------------------------------------------
 chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R ${SEAFILE_SERVER_HOME}
-
 if [[ -d /tmp/seafile-office-output/ ]]; then
     chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R /tmp/seafile-office-output/
 fi
