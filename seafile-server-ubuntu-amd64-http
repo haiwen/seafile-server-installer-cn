@@ -142,17 +142,26 @@ fi
 # Additional requirements
 # -------------------------------------------
 apt-get update
-apt-get install -y python2.7 sudo python-pip python-setuptools python-mysqldb python-ldap python-urllib3 \
-openjdk-8-jre memcached libmemcached-dev zlib1g-dev pwgen curl openssl poppler-utils libpython2.7 libreoffice \
-libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx python-requests
 
-pip install pylibmc==1.6.0 django-pylibmc==0.6.1
-pip install --timeout=3600 Pillow==4.3.0
-pip install psd-tools==1.4
+if [[ ${SEAFILE_VERSION} =~ 7\.[0-9]*\.[0-9]* ]]; then
+    apt-get install -y python2.7 sudo python-setuptools python-mysqldb python-ldap python-urllib3 \
+    openjdk-8-jre memcached libmemcached-dev zlib1g-dev pwgen curl openssl poppler-utils libpython2.7 libreoffice \
+    libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx
+else
+    apt-get install -y python2.7 sudo python-pip python-setuptools python-mysqldb python-ldap python-urllib3 \
+    openjdk-8-jre memcached libmemcached-dev zlib1g-dev pwgen curl openssl poppler-utils libpython2.7 libreoffice \
+    libreoffice-script-provider-python ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy nginx python-requests
+
+    pip install pylibmc==1.6.0 django-pylibmc==0.6.1
+    pip install --timeout=3600 Pillow==4.3.0
+    pip install psd-tools==1.4
+fi
 
 rm /etc/nginx/sites-enabled/*
 
 cat > /etc/nginx/sites-available/seafile.conf << EOF
+log_format seafileformat '$http_x_forwarded_for $remote_addr [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $upstream_response_time';
+
 server {
     listen 80;
     server_name seafile.example.com;
@@ -171,7 +180,7 @@ server {
          # used for view/edit office file via Office Online Server
          client_max_body_size 0;
 
-         access_log      /var/log/nginx/seahub.access.log;
+         access_log      /var/log/nginx/seahub.access.log seafileformat;
          error_log       /var/log/nginx/seahub.error.log;
     }
     
@@ -183,6 +192,9 @@ server {
          proxy_connect_timeout  36000s;
          proxy_read_timeout  36000s;
          proxy_request_buffering    off;
+
+        access_log      /var/log/nginx/seafhttp.access.log seafileformat;
+        error_log       /var/log/nginx/seafhttp.error.log;
     }
     location /media {
         root ${SEAFILE_SERVER_HOME}/seafile-server-latest/seahub;
@@ -203,7 +215,7 @@ server {
 
         client_max_body_size 0;
 
-        access_log      /var/log/nginx/seafdav.access.log;
+        access_log      /var/log/nginx/seafdav.access.log seafileformat;
         error_log       /var/log/nginx/seafdav.error.log;
     }
 }
