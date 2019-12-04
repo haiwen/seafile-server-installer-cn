@@ -16,7 +16,7 @@
 
     Ubuntu 18.04 (64bit):
     ```sh
-    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-7.1-ubuntu-admin64-http
+    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-7.1-ubuntu-amd64-http
     ```
 
     CentOS 8 (64bit):
