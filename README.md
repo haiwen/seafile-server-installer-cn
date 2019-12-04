@@ -6,21 +6,35 @@
 
 ## 使用步骤
 
-安装干净的 Ubuntu 16.04/18.04 或 CentOS 7 系统，并**做好镜像** (如果安装失败需要还原到镜像)。
+安装干净的 Ubuntu 16.04/18.04 或 CentOS 7/8 系统，并**做好镜像** (如果安装失败需要还原到镜像)。
 
 切换成 root 账号 (sudo -i)
 
-### 获取安装脚本（适用于 Seafile 6.0.0 及以上版本）
+### 获取安装脚本
 
-Ubuntu 16.04/18.04 (64bit):
-```
-wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ubuntu-amd64-http
-```
+- 适用于 Seafile 7.1.x 及以上版本
 
-CentOS 7 (64bit):
-```
-wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-centos-7-amd64-http
-```
+    Ubuntu 18.04 (64bit):
+    ```sh
+    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-7.1-ubuntu-amd64-http
+    ```
+
+    CentOS 8 (64bit):
+    ```sh
+    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-7.1-centos-amd64-http
+    ```
+
+- 适用于 Seafile 6.x.x 及以上版本
+
+    Ubuntu 16.04/18.04 (64bit):
+    ```sh
+    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-ubuntu-amd64-http
+    ```
+
+    CentOS 7 (64bit):
+    ```sh
+    wget https://raw.githubusercontent.com/haiwen/seafile-server-installer-cn/master/seafile-server-centos-7-amd64-http
+    ```
 
 ### 运行安装脚本并指定要安装的版本 (例如 6.0.13)
 
@@ -58,7 +72,7 @@ bash seafile-server-centos-7-amd64-http 6.0.13
     FILE_SERVER_ROOT: 'http://www.myseafile.com/seafhttp'
     ```
 
-现在您可以退出管理员界面，并进行基本的测试。关于服务器的配置选项介绍和日常运维可以参考 http://manual-cn.seafile.com/config/index.html
+现在您可以退出管理员界面，并进行基本的测试。关于服务器的配置选项介绍和日常运维可以参考 https://cloud.seafile.com/published/seafile-manual-cn/config/README.md
 
 ### 如果安装脚本出错
 
@@ -74,7 +88,7 @@ service seafile-server stop
 service seafile-server start
 ```
 
-CentOS 7:
+CentOS 7/8:
 ```
 systemctl stop seafile
 systemctl stop seahub
@@ -93,22 +107,22 @@ systemctl start seahub
 
 ### 配置邮件发送
 
-参考 http://manual-cn.seafile.com/config/sending_email.html
+参考 https://cloud.seafile.com/published/seafile-manual-cn/config/sending_email.md
 
 ## 升级和其他问题
 
 ### 版本升级
 
-* 切换为 root 用户
 * 关闭 seafile-server 相关服务
+* 切换为 seafile 用户
 * 下载高版本的安装包到 /opt/seafile 目录，并解压
-* 进入安装包下的 upgrade 目录，执行相关的升级脚本，具体可参考 http://manual.seafile.com/deploy/upgrade.html
+* 进入安装包下的 upgrade 目录，执行相关的升级脚本，具体可参考 https://download.seafile.com/published/seafile-manual/upgrade/upgrade.md
 * 启动 seafile-server 相关服务
 
 ### 迁移社区版到专业版
 
-* 切换为 root 用户
 * 关闭 seafile-server 相关服务
+* 切换为 seafile 用户
 * 下载专业版安装包到 /opt/seafile 目录，并解压
-* 进入解压好的安装包目录，执行 ./pro/pro.py setup --migrate，具体可参考 http://manual.seafile.com/deploy_pro/migrate_from_seafile_community_server.html
+* 进入解压好的安装包目录，执行 ./pro/pro.py setup --migrate，具体可参考 https://cloud.seafile.com/published/seafile-manual-cn/deploy_pro/migrate_from_seafile_community_server.md
 * 启动 seafile-server 相关服务
