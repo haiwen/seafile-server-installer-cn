@@ -173,11 +173,10 @@ systemctl status firewalld &> /dev/null \
 yum install epel-release -y
 
 yum install python3 python3-setuptools python3-pip python3-ldap memcached java-1.8.0-openjdk \
-    libmemcached libreoffice-headless libreoffice-pyuno libffi-devel pwgen curl \
-    redhat-rpm-config python3-devel gcc -y
+    libmemcached libreoffice-headless libreoffice-pyuno libffi-devel pwgen curl -y
 
 pip3 install --timeout=3600 Pillow pylibmc captcha jinja2 sqlalchemy psd-tools \
-    django-pylibmc django-compressor django-simple-captcha
+    django-pylibmc django-simple-captcha
 
 # start memcached on system boot
 systemctl enable --now memcached
