@@ -151,7 +151,7 @@ apt-get install -y python3 python3-setuptools python3-pip python3-ldap memcached
     libmemcached-dev libreoffice-script-provider-python libreoffice pwgen curl nginx
 
 pip3 install --timeout=3600 Pillow pylibmc captcha jinja2 sqlalchemy psd-tools \
-    django-pylibmc django-compressor django-simple-captcha
+    django-pylibmc django-simple-captcha
 
 rm /etc/nginx/sites-enabled/*
 
