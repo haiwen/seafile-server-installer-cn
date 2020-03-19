@@ -225,6 +225,8 @@ then
   SQLROOTPW=`sed -n 's/password=//p' /root/.my.cnf`
 else
   DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
+  systemctl start mariadb
+  systemctl enable mariadb
 
   SQLROOTPW=$(pwgen)
 
