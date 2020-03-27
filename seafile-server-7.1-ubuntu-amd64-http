@@ -153,6 +153,10 @@ apt-get install -y python3 python3-setuptools python3-pip python3-ldap memcached
 pip3 install --timeout=3600 Pillow pylibmc captcha jinja2 sqlalchemy psd-tools \
     django-pylibmc django-simple-captcha
 
+
+service memcached start
+
+
 rm /etc/nginx/sites-enabled/*
 
 cat > /etc/nginx/sites-available/seafile.conf << EOF
@@ -225,8 +229,7 @@ then
   SQLROOTPW=`sed -n 's/password=//p' /root/.my.cnf`
 else
   DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
-  systemctl start mariadb
-  systemctl enable mariadb
+  service mysql start
 
   SQLROOTPW=$(pwgen)
 
@@ -416,12 +419,14 @@ eval "sed -i 's/= ask_admin_password()/= \"${SEAFILE_ADMIN_PW}\"/' ${INSTALLPATH
 # -------------------------------------------
 # Start and stop Seafile eco system. This generates the initial admin user.
 # -------------------------------------------
-${INSTALLPATH}/seafile.sh start
-${INSTALLPATH}/seahub.sh start
+chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R ${SEAFILE_SERVER_HOME}
+
+su - seafile -c "${INSTALLPATH}/seafile.sh start"
+su - seafile -c "${INSTALLPATH}/seahub.sh start"
 wait					# sleep for a while, otherwise seahub will not be stopped
-${INSTALLPATH}/seahub.sh stop
+su - seafile -c "${INSTALLPATH}/seahub.sh stop"
 sleep 1
-${INSTALLPATH}/seafile.sh stop
+su - seafile -c "${INSTALLPATH}/seafile.sh stop"
 
 
 # -------------------------------------------
