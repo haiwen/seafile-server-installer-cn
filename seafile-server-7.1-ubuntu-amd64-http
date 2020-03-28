@@ -427,7 +427,7 @@ wait					# sleep for a while, otherwise seahub will not be stopped
 su - seafile -c "${INSTALLPATH}/seahub.sh stop"
 sleep 1
 su - seafile -c "${INSTALLPATH}/seafile.sh stop"
-
+sleep 1
 
 # -------------------------------------------
 # Restore original check_init_admin.py
@@ -438,6 +438,12 @@ if is_pro; then
     PRO_PY=${INSTALLPATH}/pro/pro.py
     $PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub_db
 fi
+
+# kill all process
+sleep 1
+pkill -9 -u seafile
+sleep 1
+
 
 # -------------------------------------------
 # Fix permissions
