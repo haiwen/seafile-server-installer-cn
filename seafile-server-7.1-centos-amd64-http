@@ -500,13 +500,14 @@ eval "sed -i 's/= ask_admin_password()/= \"${SEAFILE_ADMIN_PW}\"/' ${INSTALLPATH
 # -------------------------------------------
 # Start and stop Seafile eco system. This generates the initial admin user.
 # -------------------------------------------
-${INSTALLPATH}/seafile.sh start
-${INSTALLPATH}/seahub.sh start
+chown ${SEAFILE_SERVER_USER}:${SEAFILE_SERVER_USER} -R ${SEAFILE_SERVER_HOME}
+su - seafile -c "${INSTALLPATH}/seafile.sh start"
+su - seafile -c "${INSTALLPATH}/seahub.sh start"
 wait                         # wait for a while, otherwise seahub will not be stopped
-${INSTALLPATH}/seahub.sh stop
+su - seafile -c "${INSTALLPATH}/seahub.sh stop"
 sleep 1
-${INSTALLPATH}/seafile.sh stop
-
+su - seafile -c "${INSTALLPATH}/seafile.sh stop"
+sleep 1
 
 # -------------------------------------------
 # Restore original check_init_admin.py
