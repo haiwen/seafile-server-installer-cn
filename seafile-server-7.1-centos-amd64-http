@@ -519,6 +519,12 @@ if is_pro; then
     $PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub_db
 fi
 
+# kill all process
+sleep 1
+pkill -9 -u seafile
+sleep 1
+
+
 # -------------------------------------------
 # Fix permissions
 # -------------------------------------------
@@ -530,6 +536,7 @@ fi
 # -------------------------------------------
 # Restart seafile server
 # -------------------------------------------
+echo "Starting productive Seafile server"
 /usr/local/sbin/seafile-server-restart
 
 # -------------------------------------------
