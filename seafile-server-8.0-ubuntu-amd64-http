@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# seafile-server-installer/seafile-server-ubuntu-16-04-amd64
+# seafile-server-installer/seafile-server-ubuntu-18-04-amd64
 #
 # Copyright 2015, Alexander Jackson <alexander.jackson@seafile.de>
 # Copyright 2016, Zheng Xie <xie.zheng@seafile.com>
@@ -456,7 +456,7 @@ fi
 # Start seafile server
 # -------------------------------------------
 echo "Starting productive Seafile server"
-service seafile-server start
+service seafile-server restart
 wait
 
 
