@@ -139,6 +139,14 @@ then
 fi
 
 # -------------------------------------------
+# Abort if seafile user exists
+# -------------------------------------------
+if getent passwd ${SEAFILE_SERVER_USER} > /dev/null 2>&1 ;
+then
+  echo "Aborting because user ${SEAFILE_SERVER_USER} already exist" ; exit 1
+fi
+
+# -------------------------------------------
 # Additional requirements
 # -------------------------------------------
 apt-get update

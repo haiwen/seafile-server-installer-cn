@@ -30,7 +30,7 @@ set -e
 
 if [[ "$#" -ne 1 ]]; then
     echo "You must specif Seafile version to install"
-    echo "Like: $0 7.1.0"
+    echo "Like: $0 8.0.0"
     exit 1
 fi
 
@@ -138,7 +138,7 @@ then
 fi
 
 # -------------------------------------------
-# Abort if directory /opt/seafile/ exists
+# Abort if seafile user exists
 # -------------------------------------------
 if getent passwd ${SEAFILE_SERVER_USER} > /dev/null 2>&1 ;
 then
