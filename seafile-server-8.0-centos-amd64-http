@@ -98,7 +98,7 @@ echo
 # -------------------------------------------
 # Vars
 # -------------------------------------------
-SEAFILE_ADMIN=admin@seafile.local
+SEAFILE_ADMIN=scsgasyxx@163.com
 SEAFILE_SERVER_USER=seafile
 SEAFILE_SERVER_HOME=/opt/seafile
 IP_OR_DOMAIN=127.0.0.1
@@ -305,9 +305,9 @@ then
     echo "MariaDB installed before, skip this part"
     SQLROOTPW=`sed -n 's/password=//p' /root/.my.cnf`
 else
-    yum install mariadb-server -y
-    systemctl start mariadb
-    systemctl enable mariadb
+    yum install mysql-server -y
+    systemctl start mysqld.service
+    systemctl enable mysqld.service
 
     SQLROOTPW=$(pwgen)
 
