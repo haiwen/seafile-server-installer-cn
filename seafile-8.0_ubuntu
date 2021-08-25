@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# seafile-server-installer/seafile-server-ubuntu-18-04-amd64
+# seafile-server-installer-cn/seafile-8.0_ubuntu
 #
 # Copyright 2015, Alexander Jackson <alexander.jackson@seafile.de>
 # Copyright 2016, Zheng Xie <xie.zheng@seafile.com>
@@ -38,13 +38,13 @@ fi
 clear
 cat <<EOF
 
-  This script installs the community edition of the Seafile Server on a Ubuntu 16.04 (Xenial) 64bit
+  This script installs the community/professional edition of the Seafile Server on a Ubuntu 18.04/20.04 64bit
   - Newest Seafile server version, MariaDB, Memcached, NGINX -
   -----------------------------------------------------------------
 
   This installer is meant to run on a freshly installed machine
   only. If you run it on a production server things can and
-  probably will go terrible wrong and you will loose valuable
+  probably will go terribly wrong and you will lose valuable
   data!
 
   For questions or suggestions please contact us at
@@ -161,6 +161,10 @@ pip3 install --timeout=3600 django==2.2.* future mysqlclient pymysql Pillow pyli
 service memcached start
 
 
+# -------------------------------------------
+# Setup Nginx
+# -------------------------------------------
+
 rm /etc/nginx/sites-enabled/*
 
 cat > /etc/nginx/sites-available/seafile.conf << EOF
@@ -187,7 +191,7 @@ server {
          access_log      /var/log/nginx/seahub.access.log seafileformat;
          error_log       /var/log/nginx/seahub.error.log;
     }
-    
+
     location /seafhttp {
          rewrite ^/seafhttp(.*)$ \$1 break;
          proxy_pass http://127.0.0.1:8082;
@@ -361,7 +365,6 @@ mkdir -p ${DEFAULT_CONF_DIR}
 # Configure Seafile WebDAV Server(SeafDAV)
 # -------------------------------------------
 sed -i 's/enabled = .*/enabled = true/' ${DEFAULT_CONF_DIR}/seafdav.conf
-sed -i 's/fastcgi = .*/fastcgi = true/' ${DEFAULT_CONF_DIR}/seafdav.conf
 sed -i 's/share_name = .*/share_name = \/seafdav/' ${DEFAULT_CONF_DIR}/seafdav.conf
 
 # -------------------------------------------
@@ -499,10 +502,8 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   2) If this server is behind a firewall, you need to ensure that
      tcp port 80 is open.
 
-  3) Seahub tries to send emails via the local server. Install and
-     configure Postfix for this to work or
-     check https://manual.seafile.com/config/sending_email.html
-     for instructions on how to use an existing email account via SMTP.
+  3) Check https://manual.seafile.com/config/sending_email/
+     for instructions on how to use an existing email account to send email via SMTP.
 
 
 
@@ -511,20 +512,14 @@ cat > ${TOPDIR}/aio_seafile-server.log<<EOF
   -----------------------------------------------------------------
 
   1) Check seahub_settings.py and customize it to fit your needs. Consult
-     http://manual.seafile.com/config/seahub_settings_py.html for possible switches.
+     https://manual.seafile.com/config/seahub_settings_py/ for possible switches.
 
-  2) Setup NGINX with official SSL certificate.
+  2) Setup NGINX with official SSL certificate, we suggest you use Let’s Encrypt. Check
+     https://manual.seafile.com/deploy/https_with_nginx/
 
   3) Secure server with iptables based firewall. For instance: UFW or shorewall
 
-  4) Harden system with port knocking, fail2ban, etc.
-
-  5) Enable unattended installation of security updates. Check
-     https://wiki.Ubuntu.org/UnattendedUpgrades for details.
-
-  6) Implement a backup routine for your Seafile server.
-
-  7) Update NGINX worker processes to reflect the number of CPU cores.
+  4) Implement a backup routine for your Seafile server.
 
 
 
