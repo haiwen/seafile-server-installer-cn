@@ -43,8 +43,8 @@ bash seafile-8.0_ubuntu 8.0.0
 
 3. 进入设置页面填写正确的服务器对外的 SERVICE_URL 和 FILE_SERVER_ROOT，比如
     ```
-    SERVICE_URL: http://www.your-domain.com
-    FILE_SERVER_ROOT: http://www.your-domain.com/seafhttp
+    SERVICE_URL: http://www.example.com
+    FILE_SERVER_ROOT: http://www.example.com/seafhttp
     ```
 
 现在您可以退出管理员界面，并进行基本的测试。关于服务器的配置选项介绍和日常运维可以参考 https://cloud.seafile.com/published/seafile-manual-cn/config/README.md
