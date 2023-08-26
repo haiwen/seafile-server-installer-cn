@@ -280,7 +280,7 @@ cat > /etc/init.d/seafile-server << EOF
 # Description:       Start Seafile server
 ### END INIT INFO
 
-# Author: Alexander Jackson <alexander.jackson@seafile.com.de>
+# Author: Alexander Jackson <alexander.jackson@seafile.de>
 
 # Change the value of "seafile_dir" to your path of seafile installation
 user=${SEAFILE_SERVER_USER}
