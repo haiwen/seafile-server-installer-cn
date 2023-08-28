@@ -154,7 +154,7 @@ apt-get update
 apt-get install -y python3 python3-setuptools python3-pip python3-ldap memcached \
     libmemcached-dev libreoffice-script-provider-python libreoffice pwgen curl nginx libmysqlclient-dev
 
-pip3 install --timeout=3600 django==3.2.* future==0.18.* mysqlclient==2.1.* pymysql pillow==9.3.* pylibmc captcha==0.4 markupsafe==2.0.1 jinja2 sqlalchemy==1.4.3 psd-tools django-pylibmc django_simple_captcha==0.5.* djangosaml2==1.5.* pysaml2==7.2.* pycryptodome==3.16.* cffi==1.15.1 lxml
+pip3 install --timeout=3600 django==3.2.* future==0.18.* mysqlclient==2.1.* pymysql pillow==9.3.* pylibmc captcha==0.4 markupsafe==2.0.1 jinja2 sqlalchemy==2.0.18 psd-tools django-pylibmc django_simple_captcha==0.5.* djangosaml2==1.5.* pysaml2==7.2.* pycryptodome==3.16.* cffi==1.15.1 lxml
 
 
 
@@ -458,10 +458,9 @@ sleep 1
 # -------------------------------------------
 mv ${INSTALLPATH}/check_init_admin.py.backup ${INSTALLPATH}/check_init_admin.py
 
-if is_pro; then
-    PRO_PY=${INSTALLPATH}/pro/pro.py
-    $PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub_db
-fi
+# seafevents.conf
+PRO_PY=${INSTALLPATH}/pro/pro.py
+$PYTHON ${PRO_PY} setup --mysql --mysql_host=127.0.0.1 --mysql_port=3306 --mysql_user=seafile --mysql_password=${SQLSEAFILEPW} --mysql_db=seahub_db
 
 # kill all process
 sleep 1
