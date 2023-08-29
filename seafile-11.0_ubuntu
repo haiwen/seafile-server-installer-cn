@@ -249,7 +249,9 @@ then
   echo "MariaDB installed before, skip this part"
   SQLROOTPW=`sed -n 's/password=//p' /root/.my.cnf`
 else
-  DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
+  # https://mariadb.com/kb/en/mariadb-package-repository-setup-and-usage/
+  curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.6"
+  DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server-10.6
   service mysql start
 
   SQLROOTPW=$(pwgen)
