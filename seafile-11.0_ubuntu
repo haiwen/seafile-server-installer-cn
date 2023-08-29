@@ -38,7 +38,7 @@ fi
 clear
 cat <<EOF
 
-  This script installs the community/professional edition of the Seafile Server on a Ubuntu 18.04/20.04 64bit
+  This script installs the community/professional edition of the Seafile Server on a Ubuntu 20.04/22.04 64bit
   - Newest Seafile server version, MariaDB, Memcached, NGINX -
   -----------------------------------------------------------------
 
