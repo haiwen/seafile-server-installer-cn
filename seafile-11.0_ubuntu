@@ -190,7 +190,7 @@ server {
          client_max_body_size 0;
 
          access_log      /var/log/nginx/seahub.access.log seafileformat;
-         error_log       /var/log/nginx/seahub.error.log;
+         error_log       /var/log/nginx/seahub.error.log seafileformat;
     }
 
     location /seafhttp {
@@ -202,12 +202,12 @@ server {
          proxy_read_timeout  36000s;
 
         access_log      /var/log/nginx/seafhttp.access.log seafileformat;
-        error_log       /var/log/nginx/seafhttp.error.log;
+        error_log       /var/log/nginx/seafhttp.error.log seafileformat;
     }
     location /notification/ping {
         proxy_pass http://127.0.0.1:8083/ping;
         access_log      /var/log/nginx/notification.access.log seafileformat;
-        error_log       /var/log/nginx/notification.error.log;
+        error_log       /var/log/nginx/notification.error.log seafileformat;
     }
     location /notification {
         proxy_pass http://127.0.0.1:8083/;
@@ -215,7 +215,7 @@ server {
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
         access_log      /var/log/nginx/notification.access.log seafileformat;
-        error_log       /var/log/nginx/notification.error.log;
+        error_log       /var/log/nginx/notification.error.log seafileformat;
     }
     location /media {
         root ${SEAFILE_SERVER_HOME}/seafile-server-latest/seahub;
@@ -232,7 +232,7 @@ server {
         client_max_body_size 0;
 
         access_log      /var/log/nginx/seafdav.access.log seafileformat;
-        error_log       /var/log/nginx/seafdav.error.log;
+        error_log       /var/log/nginx/seafdav.error.log seafileformat;
     }
 }
 EOF
