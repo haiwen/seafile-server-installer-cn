@@ -390,11 +390,7 @@ CACHES = {
         'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
         'LOCATION': '127.0.0.1:11211',
     },
-    'locmem': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    },
 }
-COMPRESS_CACHE_BACKEND = 'locmem'
 
 # EMAIL_USE_TLS                       = False
 # EMAIL_HOST                          = 'localhost'
@@ -413,7 +409,6 @@ ENABLE_SIGNUP                       = False
 ACTIVATE_AFTER_REGISTRATION         = False
 SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER  = True
 SEND_EMAIL_ON_RESETTING_USER_PASSWD = True
-CLOUD_MODE                          = False
 FILE_PREVIEW_MAX_SIZE               = 30 * 1024 * 1024
 SESSION_COOKIE_AGE                  = 60 * 60 * 24 * 7 * 2
 SESSION_SAVE_EVERY_REQUEST          = False
