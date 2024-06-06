@@ -1,5 +1,7 @@
 # Seafile 安装脚本
 
+> 从 2024 年开始，一键安装脚本不再维护，请使用 Docker 来安装。
+
 一键安装脚本可以帮助您在 Ubuntu 18.04/20.04 系统上快速的安装好 Seafile 服务器，并配置好 MariaDB, Memcached, WebDAV, Ngnix 和开机自动启动脚本。
 
 
